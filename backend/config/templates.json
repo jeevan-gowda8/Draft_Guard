@@ -1,0 +1,65 @@
+{
+  "ATS-A3-Standard": {
+    "name": "ATS Standard A3 Title Block",
+    "page_size": "A3",
+    "region": {
+      "x0": 0.6,
+      "y0": 0.7,
+      "width": 0.4,
+      "height": 0.3
+    },
+    "cells": [
+      {
+        "id": "DWG_NO",
+        "label": "DWG NO.",
+        "row": 0,
+        "col": 0,
+        "criticality": "critical",
+        "format": "^[A-Z]{3}-\\d{3}-\\d{3}-\\d{3}-\\d{2}$"
+      },
+      {
+        "id": "TITLE",
+        "label": "TITLE",
+        "row": 1,
+        "col": 0,
+        "criticality": "critical"
+      },
+      {
+        "id": "DRAWN_NAME",
+        "label": "DRAWN - NAME",
+        "row": 2,
+        "col": 0,
+        "criticality": "high"
+      },
+      {
+        "id": "DRAWN_SIG",
+        "label": "DRAWN - SIGNATURE",
+        "row": 2,
+        "col": 1,
+        "criticality": "high"
+      },
+      {
+        "id": "DRAWN_DATE",
+        "label": "DRAWN - DATE",
+        "row": 2,
+        "col": 2,
+        "criticality": "high",
+        "format": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      {
+        "id": "MATERIAL",
+        "label": "MATERIAL",
+        "row": 3,
+        "col": 0,
+        "criticality": "critical"
+      },
+      {
+        "id": "FINISH",
+        "label": "FINISH",
+        "row": 4,
+        "col": 0,
+        "criticality": "high"
+      }
+    ]
+  }
+}

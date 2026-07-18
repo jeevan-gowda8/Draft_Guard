@@ -1,0 +1,35 @@
+# Virtual environment
+venv/
+.venv/
+ENV/
+env/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node dependencies
+node_modules/
+jspm_packages/
+
+# Production build directories
+frontend/dist/
+dist/
+build/
+
+# Local configuration/Temp files
+backend/temp/
+.env
+.env.local
+.env.*.local
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

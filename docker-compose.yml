@@ -1,0 +1,267 @@
+version: '3.8'
+
+services:
+  # Frontend - React Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - form-detector-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend API - FastAPI
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_WORKERS=4
+      - DEBUG=False
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/form_detector
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-sk-placeholder}
+      - ENABLE_AI_CROSSCHECK=True
+      - LOG_LEVEL=INFO
+      - MAX_PDF_SIZE_MB=50
+      - TEMP_DIR=/tmp/form-detector
+    volumes:
+      - ./backend:/app
+      - ./config:/app/config:ro
+      - /tmp/form-detector:/tmp/form-detector
+      - ./logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - form-detector-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: >
+      sh -c "python -m alembic upgrade head &&
+             uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4"
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=form_detector
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - form-detector-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - form-detector-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - api
+    networks:
+      - form-detector-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Monitoring - Prometheus (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - form-detector-network
+    depends_on:
+      - api
+    profiles:
+      - monitoring
+
+  # Monitoring - Grafana (Optional)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - form-detector-network
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+  # Logging - ELK Stack (Optional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - form-detector-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - logging
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - form-detector-network
+    depends_on:
+      - elasticsearch
+    profiles:
+      - logging
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    volumes:
+      - ./monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - ./logs:/var/log/form-detector:ro
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+    networks:
+      - form-detector-network
+    depends_on:
+      - elasticsearch
+    profiles:
+      - logging
+
+networks:
+  form-detector-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+# Service Configuration Documentation:
+#
+# DEVELOPMENT MODE (default):
+#   docker-compose up
+#
+# WITH MONITORING:
+#   docker-compose --profile monitoring up
+#
+# WITH LOGGING (ELK):
+#   docker-compose --profile logging up
+#
+# WITH ALL SERVICES:
+#   docker-compose --profile monitoring --profile logging up
+#
+# PRODUCTION MODE:
+#   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# SCALE API WORKERS:
+#   docker-compose up -d --scale api=3
+#
+# VIEW LOGS:
+#   docker-compose logs -f api
+#   docker-compose logs -f frontend
+#   docker-compose logs -f db
+#
+# ACCESS POINTS:
+#   Frontend:        http://localhost:3000
+#   API:             http://localhost:8000
+#   API Docs:        http://localhost:8000/docs
+#   Database:        localhost:5432
+#   Redis:           localhost:6379
+#   Prometheus:      http://localhost:9090
+#   Grafana:         http://localhost:3001
+#   Kibana:          http://localhost:5601
+#
+# CLEANUP:
+#   docker-compose down -v  # Remove all containers and volumes
