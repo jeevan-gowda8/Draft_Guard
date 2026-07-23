@@ -7,6 +7,13 @@ from pathlib import Path
 import os
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    load_dotenv(Path(__file__).resolve().parent / ".env")
+except Exception:
+    pass
+
 # Resolve default local SQLite DB path if DATABASE_URL is not set
 DB_PATH = Path(__file__).resolve().parent / "users.db"
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
