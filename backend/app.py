@@ -1,6 +1,9 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 import asyncio
 from pathlib import Path
 import uuid
@@ -10,6 +13,8 @@ import shutil
 import sys
 sys.path.append(str(Path(__file__).resolve().parent))
 
+from database import init_db, get_db, User
+from auth import hash_password, verify_password, create_access_token, decode_access_token
 from detection_engine import FormDetectionEngine
 
 app = FastAPI(
@@ -30,6 +35,13 @@ app.add_middleware(
 # Create temp directory in workspace
 TEMP_DIR = Path(__file__).resolve().parent / "temp"
 TEMP_DIR.mkdir(exist_ok=True)
+
+# Initialize database tables on startup
+@app.on_event("startup")
+def startup_event():
+    init_db()
+
+security = HTTPBearer()
 
 # Initialize engine
 detector = FormDetectionEngine()
@@ -116,6 +128,78 @@ async def health_check():
         "status": "healthy",
         "service": "DraftGuard API",
         "version": "1.0.0"
+    }
+
+class UserRegister(BaseModel):
+    username: str
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+@app.post("/api/auth/register")
+async def register(user_data: UserRegister, db: Session = Depends(get_db)):
+    username_clean = user_data.username.strip()
+    if not username_clean:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+    if len(user_data.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long")
+        
+    # Check if username exists
+    existing_user = db.query(User).filter(User.username == username_clean).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already exists")
+        
+    password_hash = hash_password(user_data.password)
+    new_user = User(username=username_clean, password_hash=password_hash, role="user")
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    token = create_access_token(data={"sub": new_user.username, "role": new_user.role})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": new_user.id,
+            "username": new_user.username,
+            "role": new_user.role
+        }
+    }
+
+@app.post("/api/auth/login")
+async def login(user_data: UserLogin, db: Session = Depends(get_db)):
+    username_clean = user_data.username.strip()
+    user = db.query(User).filter(User.username == username_clean).first()
+    if not user or not verify_password(user_data.password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        
+    token = create_access_token(data={"sub": user.username, "role": user.role})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role
+        }
+    }
+
+@app.get("/api/auth/me")
+async def get_me(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid session token")
+    username = payload.get("sub")
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return {
+        "id": user.id,
+        "username": user.username,
+        "role": user.role
     }
 
 if __name__ == "__main__":

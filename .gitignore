@@ -21,6 +21,8 @@ build/
 
 # Local configuration/Temp files
 backend/temp/
+*.db
+backend/users.db
 .env
 .env.local
 .env.*.local

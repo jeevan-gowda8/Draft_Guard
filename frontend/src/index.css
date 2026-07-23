@@ -1,1 +1,268 @@
 @import "tailwindcss";
+
+/* === Vanilla CSS Responsive Layouts === */
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --bg-slate-50: #f8fafc;
+  --bg-slate-100: #f1f5f9;
+  --border-slate-200: #e2e8f0;
+  --text-slate-800: #1e293b;
+  --primary-blue: #2563eb;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-slate-50);
+  color: var(--text-slate-800);
+}
+
+/* Root App Layout */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Header Navigation */
+.header-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-slate-200);
+  padding: 0.75rem 1.5rem;
+}
+
+.header-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Main Screen Wrapper */
+.main-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .main-layout {
+    flex-direction: row;
+  }
+}
+
+/* Sidebar Menu Drawer */
+.sidebar-aside {
+  background-color: #ffffff;
+  border-right: 1px solid var(--border-slate-200);
+  width: 100%;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  z-index: 30;
+  transition: transform 0.25s ease-in-out;
+}
+
+@media (max-width: 1023px) {
+  .sidebar-aside {
+    position: fixed;
+    top: 73px;
+    bottom: 0;
+    left: 0;
+    width: 280px;
+    max-width: 85%;
+    overflow-y: auto;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar-aside.closed {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-aside.open {
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar-aside {
+    width: 288px;
+    flex-shrink: 0;
+    height: calc(100vh - 73px);
+    position: sticky;
+    top: 73px;
+    overflow-y: auto;
+    transform: none !important;
+  }
+}
+
+/* Sidebar Dark Backdrop */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 20;
+  transition: opacity 0.2s ease-in-out;
+}
+
+@media (min-width: 1024px) {
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
+/* Dashboard Panel Content */
+.dashboard-pane {
+  flex: 1;
+  padding: 1rem;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .dashboard-pane {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-pane {
+    padding: 2.5rem;
+  }
+}
+
+/* Summary Banner Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid var(--border-slate-200);
+  border-radius: 1rem;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stats-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-slate-200);
+}
+
+@media (min-width: 768px) {
+  .stats-card {
+    border-bottom: none;
+    border-right: 1px solid var(--border-slate-200);
+  }
+  .stats-card:last-child {
+    border-right: none;
+  }
+}
+
+/* Parameters Settings Grid */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .settings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Auth Pages Containers */
+.auth-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--bg-slate-50);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.auth-card-container {
+  width: 100%;
+  max-width: 448px;
+  margin: auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 480px) {
+  .auth-card-container {
+    max-width: 92%;
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+  }
+}
+
+/* === Background Animations === */
+
+@keyframes orbBreathe {
+  0%, 100% {
+    opacity: 0.06;
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    opacity: 0.14;
+    transform: scale(1.1) translate(15px, -15px);
+  }
+}
+
+@keyframes orbBreatheDelayed {
+  0%, 100% {
+    opacity: 0.05;
+    transform: scale(1.15) translate(0, 0);
+  }
+  50% {
+    opacity: 0.12;
+    transform: scale(0.95) translate(-15px, 15px);
+  }
+}
+
+.animate-orb-breathe-one {
+  animation: orbBreathe 20s infinite ease-in-out;
+}
+
+.animate-orb-breathe-two {
+  animation: orbBreatheDelayed 26s infinite ease-in-out;
+}
+
+.premium-dot-grid {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.12) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* --- Anchor Scroll Alignment and Behavior --- */
+html {
+  scroll-behavior: smooth;
+}
+
+section[id] {
+  scroll-margin-top: 110px; /* Offset fixed header overlap */
+}
