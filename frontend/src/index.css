@@ -222,43 +222,6 @@ body {
   }
 }
 
-/* === Background Animations === */
-
-@keyframes orbBreathe {
-  0%, 100% {
-    opacity: 0.06;
-    transform: scale(1) translate(0, 0);
-  }
-  50% {
-    opacity: 0.14;
-    transform: scale(1.1) translate(15px, -15px);
-  }
-}
-
-@keyframes orbBreatheDelayed {
-  0%, 100% {
-    opacity: 0.05;
-    transform: scale(1.15) translate(0, 0);
-  }
-  50% {
-    opacity: 0.12;
-    transform: scale(0.95) translate(-15px, 15px);
-  }
-}
-
-.animate-orb-breathe-one {
-  animation: orbBreathe 20s infinite ease-in-out;
-}
-
-.animate-orb-breathe-two {
-  animation: orbBreatheDelayed 26s infinite ease-in-out;
-}
-
-.premium-dot-grid {
-  background-image: radial-gradient(rgba(15, 23, 42, 0.12) 1.2px, transparent 1.2px);
-  background-size: 24px 24px;
-}
-
 /* --- Anchor Scroll Alignment and Behavior --- */
 html {
   scroll-behavior: smooth;
