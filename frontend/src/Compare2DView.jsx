@@ -244,8 +244,8 @@ export default function Compare2DView({ apiUrl }) {
         {/* PDF Dropzone */}
         <div className={`p-6 rounded-2xl border-2 border-dashed transition-all shadow-md backdrop-blur-md ${
           pdfFile 
-            ? 'bg-blue-50/80 border-blue-500' 
-            : 'bg-white/80 border-slate-300 hover:border-blue-500 hover:bg-blue-50/40'
+            ? 'bg-blue-50/60 border-blue-500' 
+            : 'bg-white/50 border-slate-300 hover:border-blue-500 hover:bg-blue-50/30'
         }`}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -269,7 +269,7 @@ export default function Compare2DView({ apiUrl }) {
             onClick={() => pdfInputRef.current?.click()}
             className="cursor-pointer py-6 flex flex-col items-center justify-center text-center space-y-3"
           >
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+            <div className="p-3 bg-blue-50/80 text-blue-600 rounded-xl border border-blue-100">
               <Upload className="w-6 h-6" />
             </div>
             <div>
@@ -284,8 +284,8 @@ export default function Compare2DView({ apiUrl }) {
         {/* CAD DXF/DWF Dropzone */}
         <div className={`p-6 rounded-2xl border-2 border-dashed transition-all shadow-md backdrop-blur-md ${
           cadFile 
-            ? 'bg-indigo-50/80 border-indigo-500' 
-            : 'bg-white/80 border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/40'
+            ? 'bg-indigo-50/60 border-indigo-500' 
+            : 'bg-white/50 border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/30'
         }`}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -309,7 +309,7 @@ export default function Compare2DView({ apiUrl }) {
             onClick={() => cadInputRef.current?.click()}
             className="cursor-pointer py-6 flex flex-col items-center justify-center text-center space-y-3"
           >
-            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
+            <div className="p-3 bg-indigo-50/80 text-indigo-600 rounded-xl border border-indigo-100">
               <Upload className="w-6 h-6" />
             </div>
             <div>
@@ -323,7 +323,7 @@ export default function Compare2DView({ apiUrl }) {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50/80 border border-rose-200 rounded-xl text-rose-800 text-sm flex items-center gap-3 shadow-md backdrop-blur-md">
+        <div className="p-4 bg-rose-50/60 border border-rose-200 rounded-xl text-rose-800 text-sm flex items-center gap-3 shadow-md backdrop-blur-md">
           <XCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
           <span className="font-semibold">{error}</span>
         </div>
@@ -337,8 +337,8 @@ export default function Compare2DView({ apiUrl }) {
             {/* Metric 1: Overall Ratio Match Status */}
             <div className={`p-5 rounded-2xl border shadow-md transition-all backdrop-blur-md ${
               comparisonResults.is_same_ratio 
-                ? 'bg-emerald-50/80 border-emerald-300 text-emerald-900' 
-                : 'bg-rose-50/80 border-rose-300 text-rose-900'
+                ? 'bg-emerald-50/60 border-emerald-300 text-emerald-900' 
+                : 'bg-rose-50/60 border-rose-300 text-rose-900'
             }`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider mb-2 text-emerald-800">
                 <span>Ratio Fidelity Gate</span>
@@ -357,7 +357,7 @@ export default function Compare2DView({ apiUrl }) {
             </div>
 
             {/* Metric 2: Primary Scale Ratio */}
-            <div className="p-5 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200 shadow-md text-slate-800">
+            <div className="p-5 rounded-2xl bg-white/50 backdrop-blur-md border border-slate-200 shadow-md text-slate-800">
               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                 <span>Calculated Scale Ratio</span>
                 <Ruler className="w-4 h-4 text-blue-600" />
@@ -371,7 +371,7 @@ export default function Compare2DView({ apiUrl }) {
             </div>
 
             {/* Metric 3: Aspect Ratio Distortion */}
-            <div className="p-5 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200 shadow-md text-slate-800">
+            <div className="p-5 rounded-2xl bg-white/50 backdrop-blur-md border border-slate-200 shadow-md text-slate-800">
               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                 <span>Aspect Distortion</span>
                 <Activity className="w-4 h-4 text-indigo-600" />
@@ -385,7 +385,7 @@ export default function Compare2DView({ apiUrl }) {
             </div>
 
             {/* Metric 4: Feature Match Fidelity Score */}
-            <div className="p-5 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200 shadow-md text-slate-800">
+            <div className="p-5 rounded-2xl bg-white/50 backdrop-blur-md border border-slate-200 shadow-md text-slate-800">
               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                 <span>Dimensional Fidelity</span>
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -400,7 +400,7 @@ export default function Compare2DView({ apiUrl }) {
           </div>
 
           {/* Interactive 2D Light-Mode Design Canvas Container */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-md">
+          <div className="bg-white/50 backdrop-blur-md rounded-2xl border border-slate-200 p-5 space-y-4 shadow-md">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -646,7 +646,7 @@ export default function Compare2DView({ apiUrl }) {
           </div>
 
           {/* Light Theme Feature Ratio Matrix Table */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-slate-200/80 overflow-hidden shadow-md">
+          <div className="bg-white/50 backdrop-blur-md rounded-2xl border border-slate-200/80 overflow-hidden shadow-md">
             {/* Table Header / Toolbar */}
             <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/80">
               <div className="flex items-center gap-3">

@@ -1027,7 +1027,7 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden">
+              <div className="bg-white/50 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden">
                 {/* Upload drag drop */}
                 <div 
                   onClick={() => fileInputRef.current?.click()}
@@ -1216,7 +1216,7 @@ export default function App() {
               )}
 
               {/* Tabs Section */}
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden">
+              <div className="bg-white/50 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/80 overflow-hidden">
                 
                 {/* Mobile Dropdown Tab Selector */}
                 <div className="md:hidden p-4 bg-slate-50 border-b border-slate-200">
