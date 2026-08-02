@@ -426,9 +426,9 @@ export default function App() {
         <div className="absolute top-[-15%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-400/15 blur-[140px] pointer-events-none animate-ambient-glow-1" />
         <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-400/15 blur-[150px] pointer-events-none animate-ambient-glow-2" />
 
-        {/* Animated High-Tech CAD Background Image */}
+        {/* Fixed High-Tech CAD Background Image */}
         <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-20 mix-blend-multiply animate-bg-image z-0"
+          className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-20 mix-blend-multiply z-0"
           style={{ backgroundImage: `url('/landing_hero_bg.png')` }}
         />
 
@@ -1001,7 +1001,12 @@ export default function App() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="dashboard-pane">
+        <main className="dashboard-pane relative">
+          {/* Fixed Stationary Dashboard CAD Background Image */}
+          <div 
+            className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-15 mix-blend-multiply z-0"
+            style={{ backgroundImage: `url('/dashboard_bg.png')` }}
+          />
           
           {errorMessage && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex gap-3 text-amber-800 shadow-sm animate-fade-in">
