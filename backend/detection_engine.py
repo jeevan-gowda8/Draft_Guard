@@ -32,6 +32,8 @@ except ImportError:
     Image = None
 
 
+from cad_comparator import CADComparatorEngine
+
 class FormDetectionEngine:
     def __init__(self, config_path: str = None):
         if config_path is None:
@@ -43,6 +45,12 @@ class FormDetectionEngine:
             
         self.templates = self._load_templates()
         self.confidence_threshold = 0.90
+        self.cad_comparator = CADComparatorEngine()
+
+    def compare_2d_cad_and_pdf(self, pdf_path: str, cad_path: str) -> Dict:
+        """Compares 2D PDF drawing with DXF/DWF CAD file and computes scale ratios."""
+        return self.cad_comparator.compare(pdf_path, cad_path)
+
     
     def _load_templates(self) -> Dict:
         """Load title block templates from configuration"""

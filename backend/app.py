@@ -97,6 +97,55 @@ async def analyze_pdf(file: UploadFile = File(...)):
             except Exception:
                 pass
 
+@app.post("/api/compare-2d")
+async def compare_2d_files(
+    pdf_file: UploadFile = File(...),
+    cad_file: UploadFile = File(...)
+):
+    """
+    Compare a 2D PDF drawing file against a CAD file (DXF or DWF).
+    Extracts geometric dimensions, calculates scale ratios, and verifies ratio fidelity.
+    """
+    if not pdf_file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="pdf_file must be a PDF file")
+
+    cad_ext = Path(cad_file.filename).suffix.lower()
+    if cad_ext not in ('.dxf', '.dwf'):
+        raise HTTPException(status_code=400, detail="cad_file must be a .dxf or .dwf CAD file")
+
+    pdf_temp = TEMP_DIR / f"{uuid.uuid4()}_{pdf_file.filename}"
+    cad_temp = TEMP_DIR / f"{uuid.uuid4()}_{cad_file.filename}"
+
+    try:
+        # Save uploaded PDF
+        with open(pdf_temp, "wb") as f_pdf:
+            shutil.copyfileobj(pdf_file.file, f_pdf)
+
+        # Save uploaded CAD
+        with open(cad_temp, "wb") as f_cad:
+            shutil.copyfileobj(cad_file.file, f_cad)
+
+        # Run comparison in thread pool
+        results = await asyncio.to_thread(
+            detector.compare_2d_cad_and_pdf,
+            str(pdf_temp),
+            str(cad_temp)
+        )
+
+        return JSONResponse(content=results, status_code=200)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"2D Comparison error: {str(e)}")
+    finally:
+        for p in (pdf_temp, cad_temp):
+            if p.exists():
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
+
 @app.post("/api/validate-template")
 async def validate_template(template_config: dict):
     """
