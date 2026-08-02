@@ -420,17 +420,10 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="auth-page-wrapper select-none">
-        
-        {/* Stationary Premium Dot Grid */}
-        <div className="absolute inset-0 premium-dot-grid pointer-events-none" />
-
-        {/* Stationary Background Blur Orbs */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-blue-400/10 blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-400/10 blur-[120px] pointer-events-none" />
+      <div className="auth-page-wrapper select-none bg-slate-50">
         
         {/* Header / Navbar */}
-        <header className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex items-center justify-between border-b border-slate-200/50 bg-white/50 backdrop-blur-md shadow-sm">
+        <header className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex items-center justify-between border-b border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-1 bg-white rounded-xl shadow-md border border-slate-100 flex items-center justify-center">
               <img src="/logo.png" className="w-8 h-8 object-contain" alt="DraftGuard Logo" />
@@ -470,31 +463,25 @@ export default function App() {
           <section className="max-w-6xl mx-auto px-6 pt-16 lg:pt-24 pb-12 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-28 items-center">
               
-              {/* Left Column: Interactive Blueprint Mockup Graphic */}
-              <div className="lg:col-span-7 order-2 lg:order-1 select-none w-full animate-fade-in">
-                <div className="bg-slate-100 border border-slate-200 rounded-3xl p-4 sm:p-6 shadow-2xl relative">
-                  <div className="aspect-[1.5] bg-white border border-slate-800/10 rounded-2xl p-6 flex flex-col justify-between font-mono bg-[linear-gradient(to_right,rgba(15,23,42,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.02)_1px,transparent_1px)] [background-size:16px_16px]">
-                    <div className="w-full h-full border border-slate-800/20 rounded p-6 relative flex flex-col justify-between">
-                      {/* Schematic Geometries */}
+              {/* Left Column: Clean Solid Blueprint Card Graphic */}
+              <div className="lg:col-span-7 order-2 lg:order-1 select-none w-full">
+                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xl relative">
+                  <div className="aspect-[1.5] bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col justify-between font-mono">
+                    <div className="w-full h-full border border-slate-300 rounded p-6 relative flex flex-col justify-between">
+                      {/* Schematic Geometry */}
                       <div className="flex-1 flex items-center justify-center relative">
-                        <div className="w-64 h-24 border-2 border-slate-800/50 rounded-lg relative flex items-center justify-center">
-                          <div className="w-14 h-14 rounded-full border border-dashed border-slate-400 flex items-center justify-center">
-                            <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
-                          </div>
-                          {/* Dimensions Lines */}
-                          <div className="absolute -top-6 left-0 right-0 flex justify-between text-[9px] text-blue-600 font-bold">
-                            <span>|←</span>
-                            <span className="border-b border-blue-500 flex-1 mx-1 text-center leading-none">120.00 mm</span>
-                            <span>→|</span>
+                        <div className="w-64 h-24 border-2 border-slate-700 rounded-lg flex items-center justify-center bg-white">
+                          <div className="w-14 h-14 rounded-full border border-slate-400 flex items-center justify-center">
+                            <div className="w-3 h-3 rounded-full bg-blue-600"></div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Highlights Overlay Mockup */}
-                      <div className="absolute bottom-3 left-3 p-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-[9px] font-bold text-left">
+                      {/* Status Badges */}
+                      <div className="absolute bottom-3 left-3 p-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-[10px] font-bold text-left">
                         ⚠️ Missing DWG NO.
                       </div>
-                      <div className="absolute bottom-3 right-3 p-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-[9px] font-bold text-left">
+                      <div className="absolute bottom-3 right-3 p-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-[10px] font-bold text-left">
                         ✓ ISO Compliant
                       </div>
                     </div>
@@ -503,7 +490,7 @@ export default function App() {
               </div>
 
               {/* Right Column: Hero copy and CTAs */}
-              <div className="lg:col-span-5 order-1 lg:order-2 text-center lg:text-left animate-fade-in">
+              <div className="lg:col-span-5 order-1 lg:order-2 text-center lg:text-left">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-6 border border-blue-100">
                   <span>✨</span> Automated Drafting QA Engine
                 </div>
