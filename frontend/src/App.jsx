@@ -1001,12 +1001,7 @@ export default function App() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="dashboard-pane relative">
-          {/* Animated Dashboard CAD Background Texture Layer */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-15 mix-blend-multiply animate-dashboard-bg z-0"
-            style={{ backgroundImage: `url('/dashboard_bg.png')` }}
-          />
+        <main className="dashboard-pane">
           
           {errorMessage && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex gap-3 text-amber-800 shadow-sm animate-fade-in">
