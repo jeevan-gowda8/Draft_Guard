@@ -15,7 +15,6 @@ import {
   Filter, 
   Sliders, 
   Activity, 
-  Sparkles,
   ChevronRight,
   ShieldCheck,
   Compass,
@@ -218,13 +217,6 @@ export default function Compare2DView({ apiUrl }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={runPresetDemo}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-semibold border border-white/20 transition flex items-center gap-2 shadow-sm backdrop-blur-sm cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              Load Demo Files
-            </button>
             <button
               onClick={handleCompare}
               disabled={analyzing || (!pdfFile && !cadFile)}
