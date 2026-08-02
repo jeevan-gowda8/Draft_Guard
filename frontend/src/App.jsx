@@ -433,7 +433,7 @@ export default function App() {
         />
 
         {/* Header / Navbar */}
-        <header className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex items-center justify-between border-b border-slate-200 bg-white/85 backdrop-blur-md shadow-sm">
+        <header className="fixed top-0 left-0 right-0 z-40 px-8 py-5 flex items-center justify-between border-b border-slate-200/40 bg-white/30 backdrop-blur-md transition-all">
           <div className="flex items-center gap-3">
             <div className="p-1 bg-white rounded-xl shadow-md border border-slate-100 flex items-center justify-center">
               <img src="/logo.png" className="w-8 h-8 object-contain" alt="DraftGuard Logo" />
