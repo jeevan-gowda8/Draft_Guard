@@ -462,4 +462,4 @@ Built on top of excellent open-source libraries:
 
 **Made with ❤️ for Engineering Excellence**
 
-For questions or contributions, please contact: your-email@your-domain.com
+For questions or contributions, please contact: jeevangowdajeevan0808@gmail.com
