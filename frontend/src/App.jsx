@@ -1216,7 +1216,7 @@ export default function App() {
               )}
 
               {/* Tabs Section */}
-              <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+              <div className="bg-white opacity-100 rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
                 
                 {/* Mobile Dropdown Tab Selector */}
                 <div className="md:hidden p-4 bg-slate-50 border-b border-slate-200">
