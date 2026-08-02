@@ -477,7 +477,7 @@ export default function App() {
                     <div className="w-full h-full border border-slate-800/20 rounded p-6 relative flex flex-col justify-between">
                       {/* Schematic Geometries */}
                       <div className="flex-1 flex items-center justify-center relative">
-                        <div className="w-64 h-24 border-2 border-slate-800/50 rounded-lg relative flex items-center justify-center animate-pulse">
+                        <div className="w-64 h-24 border-2 border-slate-800/50 rounded-lg relative flex items-center justify-center">
                           <div className="w-14 h-14 rounded-full border border-dashed border-slate-400 flex items-center justify-center">
                             <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
                           </div>
@@ -504,14 +504,14 @@ export default function App() {
 
               {/* Right Column: Hero copy and CTAs */}
               <div className="lg:col-span-5 order-1 lg:order-2 text-center lg:text-left animate-fade-in">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-6 border border-blue-100 animate-pulse">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-6 border border-blue-100">
                   <span>✨</span> Automated Drafting QA Engine
                 </div>
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
                   Verify Technical Drawing Completeness Instantly
                 </h1>
                 <p className="text-sm sm:text-base text-slate-500 font-medium mt-6 leading-relaxed">
-                  DraftGuard parses title block cells, signatures, dates, weights, and drawing numbers in technical PDFs. Ensure standards compliance before release.
+                  DraftGuard parses title block metadata, compares PDF 2D prints against DXF/DWF CAD models, measures geometric ratios, and flags missing fields.
                 </p>
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                   <button
@@ -534,39 +534,59 @@ export default function App() {
             </div>
           </section>
 
-          {/* Features Grid */}
+          {/* Updated Features Grid */}
           <section id="features" className="max-w-6xl mx-auto px-6 py-16 border-t border-slate-200/60 relative z-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight text-center mb-12">
-              Advanced Drafting Verification Features
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Advanced Drafting Verification Features
+              </h2>
+              <p className="text-sm text-slate-500 font-medium">
+                Comprehensive quality inspection suite for engineering production prints and CAD source files.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Feature 1: 2D Design Ratio Comparator */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
+                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
+                  <FileCheck className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">2D Design Ratio Comparator</h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  Compares 2D PDF drawings against DXF/DWF CAD models, measures geometric features, and verifies scale ratio fidelity with instant discrepancy alerts.
+                </p>
+              </div>
+
+              {/* Feature 2: Title Block Auditing */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
                 <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100">
                   <FileCheck className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-slate-800">Automatic Title Block Auditing</h3>
+                <h3 className="text-base font-bold text-slate-900">Title Block Completeness</h3>
                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Extracts metadata elements from drawing title panels like revisions, materials, scales, and sheet sizes.
+                  Automatically parses title block metadata like revisions, drawing numbers, materials, scales, signatures, dates, and sheet sizes.
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left">
+              {/* Feature 3: Interactive Canvas & Ruler */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
+                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center border border-purple-100">
+                  <Settings2 className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">Interactive Canvas & Point Ruler</h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  Renders side-by-side or overlaid 2D designs in high-DPI Light Mode with point-to-point live measurement tools.
+                </p>
+              </div>
+
+              {/* Feature 4: Local Security & Storage */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
                 <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-slate-800">Local SQLite Security Store</h3>
+                <h3 className="text-base font-bold text-slate-900">Encrypted Local Security</h3>
                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Stores accounts and drawing audit stats inside an encrypted local SQLite database file, keeping your data entirely private.
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left">
-                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center border border-purple-100">
-                  <Server className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-800">Interactive Canvas Visualizer</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Renders technical PDF blueprints with High-DPI Canvas scaling for crisp mobile rendering on Retina and phone screens.
+                  Stores accounts and drawing audit stats securely in a local database file, guaranteeing enterprise privacy and data isolation.
                 </p>
               </div>
             </div>
