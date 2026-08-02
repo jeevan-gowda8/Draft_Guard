@@ -296,6 +296,25 @@ class CADComparatorEngine:
 
         doc.close()
 
+        drawing_paths = []
+        for d in drawings[:120]:
+            items = d.get('items', [])
+            for item in items:
+                if item[0] == 'l':
+                    p1, p2 = item[1], item[2]
+                    drawing_paths.append({
+                        'type': 'line',
+                        'start': (round(p1.x, 2), round(p1.y, 2)),
+                        'end': (round(p2.x, 2), round(p2.y, 2))
+                    })
+                elif item[0] == 're':
+                    r = item[1]
+                    drawing_paths.append({
+                        'type': 'rect',
+                        'x': round(r.x0, 2), 'y': round(r.y0, 2),
+                        'w': round(r.width, 2), 'h': round(r.height, 2)
+                    })
+
         return {
             'page_width_pt': round(width_pt, 2),
             'page_height_pt': round(height_pt, 2),
@@ -304,7 +323,8 @@ class CADComparatorEngine:
             'drawing_width_mm': round(drawing_width_mm, 3),
             'drawing_height_mm': round(drawing_height_mm, 3),
             'features': features,
-            'text_callouts': callouts[:10]
+            'text_callouts': callouts[:10],
+            'drawing_paths': drawing_paths[:150]
         }
 
     def compare(self, pdf_path: str, cad_path: str) -> Dict[str, Any]:

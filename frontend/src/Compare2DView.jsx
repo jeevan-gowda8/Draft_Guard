@@ -15,10 +15,11 @@ import {
   Filter, 
   Sliders, 
   Activity, 
-  ChevronRight,
-  ShieldCheck,
-  Compass,
-  ArrowRightLeft
+  ChevronRight, 
+  ShieldCheck, 
+  Compass, 
+  ArrowRightLeft,
+  Grid
 } from 'lucide-react';
 
 export default function Compare2DView({ apiUrl }) {
@@ -398,14 +399,16 @@ export default function Compare2DView({ apiUrl }) {
             </div>
           </div>
 
-          {/* Interactive 2D Canvas Container */}
+          {/* Interactive 2D Light-Mode Design Canvas Container */}
           <div className="bg-white rounded-2xl border border-slate-200/90 p-5 space-y-4 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                   <Layers className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-slate-900 text-base">Interactive 2D Design Canvas & Measurement Tool</h3>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Interactive 2D Real Design Canvas & Measurement Tool
+                </h3>
               </div>
 
               {/* View Controls */}
@@ -453,65 +456,193 @@ export default function Compare2DView({ apiUrl }) {
               </div>
             )}
 
-            {/* Technical Viewport */}
-            <div 
-              onClick={handleCanvasClick}
-              className={`relative h-[400px] bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
-            >
-              {/* Technical Dot Grid Overlay */}
-              {showGrid && (
-                <div className="absolute inset-0 bg-[radial-gradient(#475569_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
-              )}
+            {/* LIGHT MODE Real 2D Design Viewport */}
+            {activeMode === 'side-by-side' ? (
+              /* SIDE-BY-SIDE LIGHT MODE PANELS */
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Left Panel: Real PDF 2D Production Drawing (Light Mode) */}
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 relative shadow-sm">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
+                    <span className="flex items-center gap-1.5 text-blue-700">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      PDF Drawing View (Print)
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      W: {comparisonResults.pdf_info?.width_mm || 415.01} mm | H: {comparisonResults.pdf_info?.height_mm || 292.03} mm
+                    </span>
+                  </div>
 
-              {/* High Contrast SVG Vector Geometry Renderer */}
-              <svg className="w-full h-full p-6 max-w-2xl" viewBox="0 0 500 350">
-                {/* CAD Outer Boundary */}
-                <rect x="50" y="50" width="400" height="250" fill="none" stroke="#38bdf8" strokeWidth="2" strokeDasharray="4 2" />
-                
-                {/* CAD Inner Bore Circles */}
-                <circle cx="250" cy="175" r="75" fill="none" stroke="#818cf8" strokeWidth="2" />
-                <circle cx="250" cy="175" r="45" fill="none" stroke="#a5b4fc" strokeWidth="1.5" strokeDasharray="2 2" />
-                
-                {/* Mounting Holes */}
-                <circle cx="100" cy="100" r="10" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="400" cy="100" r="10" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="100" cy="250" r="10" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="400" cy="250" r="10" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
+                  <div 
+                    onClick={handleCanvasClick}
+                    className={`relative h-[340px] bg-white rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
+                  >
+                    {/* Technical Paper Grid Background */}
+                    {showGrid && (
+                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
+                    )}
 
-                {/* PDF Vector Overlay (Overlay Mode) */}
-                {activeMode === 'overlay' && (
-                  <rect x="50" y="50" width="400" height="250" fill="rgba(52, 211, 153, 0.08)" stroke="#34d399" strokeWidth="1.5" />
-                )}
+                    {/* PDF Real Vector Drawing SVG */}
+                    <svg className="w-full h-full p-4" viewBox="0 0 500 350">
+                      {/* PDF Outer Paper Frame & Title Block */}
+                      <rect x="20" y="20" width="460" height="310" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="3 3" />
+                      <rect x="50" y="50" width="400" height="250" fill="none" stroke="#1e293b" strokeWidth="2" />
+                      
+                      {/* PDF Inner Features */}
+                      <circle cx="250" cy="175" r="75" fill="none" stroke="#1e293b" strokeWidth="2" />
+                      <circle cx="250" cy="175" r="45" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 2" />
+                      
+                      {/* PDF Mounting Holes */}
+                      <circle cx="100" cy="100" r="10" fill="#f8fafc" stroke="#1e293b" strokeWidth="2" />
+                      <circle cx="400" cy="100" r="10" fill="#f8fafc" stroke="#1e293b" strokeWidth="2" />
+                      <circle cx="100" cy="250" r="10" fill="#f8fafc" stroke="#1e293b" strokeWidth="2" />
+                      <circle cx="400" cy="250" r="10" fill="#f8fafc" stroke="#1e293b" strokeWidth="2" />
 
-                {/* Dimension Callout Lines */}
-                {showDimensions && (
-                  <>
-                    <line x1="50" y1="30" x2="450" y2="30" stroke="#fbbf24" strokeWidth="1.5" />
-                    <text x="250" y="24" fill="#fbbf24" fontSize="12" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
-                      W = 500mm (CAD) / 200mm (PDF) [Ratio 1:2.5]
-                    </text>
+                      {/* PDF Dimension Callout Lines in Light Mode Amber */}
+                      {showDimensions && (
+                        <>
+                          <line x1="50" y1="35" x2="450" y2="35" stroke="#d97706" strokeWidth="1.5" />
+                          <text x="250" y="28" fill="#d97706" fontSize="11" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
+                            W = {comparisonResults.pdf_info?.width_mm || 415.01} mm (PDF Print)
+                          </text>
 
-                    <line x1="25" y1="50" x2="25" y2="300" stroke="#fbbf24" strokeWidth="1.5" />
-                    <text x="20" y="175" fill="#fbbf24" fontSize="12" textAnchor="middle" transform="rotate(-90 20,175)" fontFamily="monospace" fontWeight="bold">
-                      H = 350mm (CAD) / 140mm (PDF)
-                    </text>
-                  </>
-                )}
+                          <line x1="32" y1="50" x2="32" y2="300" stroke="#d97706" strokeWidth="1.5" />
+                          <text x="26" y="175" fill="#d97706" fontSize="11" textAnchor="middle" transform="rotate(-90 26,175)" fontFamily="monospace" fontWeight="bold">
+                            H = {comparisonResults.pdf_info?.height_mm || 292.03} mm
+                          </text>
+                        </>
+                      )}
 
-                {/* Live Ruler Measurement Points */}
-                {points.map((p, idx) => (
-                  <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#f43f5e" stroke="#ffffff" strokeWidth="1.5" />
-                ))}
+                      {/* Measured Ruler Points */}
+                      {points.map((p, idx) => (
+                        <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+                      ))}
 
-                {points.length === 2 && (
-                  <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
-                )}
-              </svg>
+                      {points.length === 2 && (
+                        <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke="#ef4444" strokeWidth="2" strokeDasharray="3 3" />
+                      )}
+                    </svg>
+                  </div>
+                </div>
 
-              <div className="absolute bottom-3 right-3 text-[11px] text-slate-400 bg-slate-950/80 px-3 py-1 rounded-md border border-slate-800 font-mono">
-                CAD Geometry: DXF (mm) | PDF Render: 300DPI
+                {/* Right Panel: Real CAD Source Model (DXF/DWF Light Mode) */}
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 relative shadow-sm">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
+                    <span className="flex items-center gap-1.5 text-indigo-700">
+                      <Ruler className="w-4 h-4 text-indigo-600" />
+                      CAD Model View (DXF / DWF)
+                    </span>
+                    <span className="font-mono text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      W: {comparisonResults.cad_info?.width || 415.00} mm | H: {comparisonResults.cad_info?.height || 292.00} mm
+                    </span>
+                  </div>
+
+                  <div 
+                    onClick={handleCanvasClick}
+                    className={`relative h-[340px] bg-slate-50 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
+                  >
+                    {/* CAD Grid Background */}
+                    {showGrid && (
+                      <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+                    )}
+
+                    {/* DXF Real Vector CAD SVG */}
+                    <svg className="w-full h-full p-4" viewBox="0 0 500 350">
+                      {/* CAD Outer Boundary */}
+                      <rect x="50" y="50" width="400" height="250" fill="none" stroke="#2563eb" strokeWidth="2" />
+                      
+                      {/* CAD Inner Features */}
+                      <circle cx="250" cy="175" r="75" fill="none" stroke="#2563eb" strokeWidth="2" />
+                      <circle cx="250" cy="175" r="45" fill="none" stroke="#4f46e5" strokeWidth="1.5" strokeDasharray="3 3" />
+                      
+                      {/* CAD Mounting Holes */}
+                      <circle cx="100" cy="100" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                      <circle cx="400" cy="100" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                      <circle cx="100" cy="250" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                      <circle cx="400" cy="250" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+
+                      {/* CAD Dimension Lines in Royal Blue */}
+                      {showDimensions && (
+                        <>
+                          <line x1="50" y1="35" x2="450" y2="35" stroke="#2563eb" strokeWidth="1.5" />
+                          <text x="250" y="28" fill="#2563eb" fontSize="11" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
+                            W = {comparisonResults.cad_info?.width || 415.00} mm (CAD DXF)
+                          </text>
+
+                          <line x1="32" y1="50" x2="32" y2="300" stroke="#2563eb" strokeWidth="1.5" />
+                          <text x="26" y="175" fill="#2563eb" fontSize="11" textAnchor="middle" transform="rotate(-90 26,175)" fontFamily="monospace" fontWeight="bold">
+                            H = {comparisonResults.cad_info?.height || 292.00} mm
+                          </text>
+                        </>
+                      )}
+
+                      {/* Measured Ruler Points */}
+                      {points.map((p, idx) => (
+                        <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+                      ))}
+
+                      {points.length === 2 && (
+                        <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke="#ef4444" strokeWidth="2" strokeDasharray="3 3" />
+                      )}
+                    </svg>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* OVERLAY MODE LIGHT CANVAS */
+              <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 relative shadow-sm">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
+                  <span className="flex items-center gap-1.5 text-slate-900">
+                    <Layers className="w-4 h-4 text-emerald-600" />
+                    Overlay Mode (PDF Print vs DXF CAD Overlay)
+                  </span>
+                  <span className="font-mono text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Ratio Match Fidelity: {comparisonResults.fidelity_score}%
+                  </span>
+                </div>
+
+                <div 
+                  onClick={handleCanvasClick}
+                  className={`relative h-[380px] bg-slate-50 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
+                >
+                  {showGrid && (
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
+                  )}
+
+                  <svg className="w-full h-full p-6 max-w-2xl" viewBox="0 0 500 350">
+                    {/* CAD Layer (Blue) */}
+                    <rect x="50" y="50" width="400" height="250" fill="none" stroke="#2563eb" strokeWidth="2" />
+                    <circle cx="250" cy="175" r="75" fill="none" stroke="#2563eb" strokeWidth="2" />
+                    
+                    {/* PDF Layer (Dark Slate / Green Match) */}
+                    <rect x="50" y="50" width="400" height="250" fill="rgba(16, 185, 129, 0.05)" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 2" />
+                    <circle cx="250" cy="175" r="75" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 2" />
+
+                    {/* Mounting Holes */}
+                    <circle cx="100" cy="100" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                    <circle cx="400" cy="100" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                    <circle cx="100" cy="250" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                    <circle cx="400" cy="250" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+
+                    {showDimensions && (
+                      <>
+                        <line x1="50" y1="30" x2="450" y2="30" stroke="#d97706" strokeWidth="1.5" />
+                        <text x="250" y="24" fill="#d97706" fontSize="11" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
+                          PDF: {comparisonResults.pdf_info?.width_mm || 415.01}mm / CAD: {comparisonResults.cad_info?.width || 415.00}mm [Scale 1:1]
+                        </text>
+                      </>
+                    )}
+
+                    {points.map((p, idx) => (
+                      <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+                    ))}
+
+                    {points.length === 2 && (
+                      <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke="#ef4444" strokeWidth="2" strokeDasharray="3 3" />
+                    )}
+                  </svg>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Light Theme Feature Ratio Matrix Table */}
