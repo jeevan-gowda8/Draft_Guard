@@ -420,10 +420,14 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="auth-page-wrapper select-none bg-slate-50">
+      <div className="auth-page-wrapper select-none bg-slate-50 relative overflow-hidden">
         
+        {/* Smooth Animated Background Glow Orbs */}
+        <div className="absolute top-[-15%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-400/15 blur-[140px] pointer-events-none animate-ambient-glow-1" />
+        <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-400/15 blur-[150px] pointer-events-none animate-ambient-glow-2" />
+
         {/* Header / Navbar */}
-        <header className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex items-center justify-between border-b border-slate-200 bg-white shadow-sm">
+        <header className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex items-center justify-between border-b border-slate-200 bg-white/85 backdrop-blur-md shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-1 bg-white rounded-xl shadow-md border border-slate-100 flex items-center justify-center">
               <img src="/logo.png" className="w-8 h-8 object-contain" alt="DraftGuard Logo" />
@@ -463,8 +467,8 @@ export default function App() {
           <section className="max-w-6xl mx-auto px-6 pt-16 lg:pt-24 pb-12 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-28 items-center">
               
-              {/* Left Column: Clean Solid Blueprint Card Graphic */}
-              <div className="lg:col-span-7 order-2 lg:order-1 select-none w-full">
+              {/* Left Column: Floating Blueprint Card Graphic */}
+              <div className="lg:col-span-7 order-2 lg:order-1 select-none w-full animate-float-hero">
                 <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xl relative">
                   <div className="aspect-[1.5] bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col justify-between font-mono">
                     <div className="w-full h-full border border-slate-300 rounded p-6 relative flex flex-col justify-between">

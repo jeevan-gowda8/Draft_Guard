@@ -222,6 +222,51 @@ body {
   }
 }
 
+/* === Landing Page Ambient Background Animations === */
+
+@keyframes ambientGlowOne {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.30;
+  }
+  50% {
+    transform: translate(50px, -35px) scale(1.2);
+    opacity: 0.55;
+  }
+}
+
+@keyframes ambientGlowTwo {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1.1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate(-45px, 45px) scale(0.9);
+    opacity: 0.50;
+  }
+}
+
+@keyframes floatHeroCard {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-ambient-glow-1 {
+  animation: ambientGlowOne 18s ease-in-out infinite;
+}
+
+.animate-ambient-glow-2 {
+  animation: ambientGlowTwo 22s ease-in-out infinite;
+}
+
+.animate-float-hero {
+  animation: floatHeroCard 6s ease-in-out infinite;
+}
+
 /* --- Anchor Scroll Alignment and Behavior --- */
 html {
   scroll-behavior: smooth;
