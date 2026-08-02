@@ -20,6 +20,7 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
+import Compare2DView from './Compare2DView';
 
 export default function App() {
   const [file, setFile] = useState(null);
@@ -829,6 +830,7 @@ export default function App() {
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Navigation</h2>
             <nav className="space-y-1">
               {[
+                { id: 'compare2d', label: '2D Design Ratio' },
                 { id: 'overview', label: 'Overview Metrics' },
                 { id: 'details', label: 'Field Details' },
                 { id: 'settings', label: 'Parameters & Rules' }
@@ -991,7 +993,9 @@ export default function App() {
             </div>
           )}
 
-          {!results && !analyzing ? (
+          {activeTab === 'compare2d' ? (
+            <Compare2DView apiUrl={apiUrl} />
+          ) : !results && !analyzing ? (
             // Upload UI
             <div className="max-w-3xl mx-auto space-y-8">
               <div className="text-center space-y-2">
