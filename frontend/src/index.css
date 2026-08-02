@@ -267,6 +267,26 @@ body {
   animation: floatHeroCard 6s ease-in-out infinite;
 }
 
+/* === Animated Landing Background Image === */
+@keyframes bgImagePan {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.18;
+  }
+  50% {
+    transform: scale(1.08) translate(-15px, 10px);
+    opacity: 0.28;
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.18;
+  }
+}
+
+.animate-bg-image {
+  animation: bgImagePan 24s ease-in-out infinite;
+}
+
 /* --- Anchor Scroll Alignment and Behavior --- */
 html {
   scroll-behavior: smooth;

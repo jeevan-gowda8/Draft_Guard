@@ -426,6 +426,12 @@ export default function App() {
         <div className="absolute top-[-15%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-400/15 blur-[140px] pointer-events-none animate-ambient-glow-1" />
         <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-400/15 blur-[150px] pointer-events-none animate-ambient-glow-2" />
 
+        {/* Animated High-Tech CAD Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-20 mix-blend-multiply animate-bg-image z-0"
+          style={{ backgroundImage: `url('/landing_hero_bg.png')` }}
+        />
+
         {/* Header / Navbar */}
         <header className="fixed top-0 left-0 right-0 z-40 px-8 py-6 flex items-center justify-between border-b border-slate-200 bg-white/85 backdrop-blur-md shadow-sm">
           <div className="flex items-center gap-3">
