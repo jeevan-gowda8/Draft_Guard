@@ -288,22 +288,6 @@ body {
   animation: bgImagePan 24s ease-in-out infinite;
 }
 
-/* === Animated Dashboard Background Image === */
-@keyframes dashboardBgPulse {
-  0%, 100% {
-    transform: scale(1) translate(0, 0);
-    opacity: 0.12;
-  }
-  50% {
-    transform: scale(1.06) translate(-12px, 8px);
-    opacity: 0.22;
-  }
-}
-
-.animate-dashboard-bg {
-  animation: dashboardBgPulse 28s ease-in-out infinite;
-}
-
 /* --- Anchor Scroll Alignment and Behavior --- */
 html {
   scroll-behavior: smooth;
