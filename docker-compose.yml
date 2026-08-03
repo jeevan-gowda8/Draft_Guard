@@ -38,7 +38,7 @@ services:
       - API_WORKERS=4
       - DEBUG=False
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/form_detector
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-sk-placeholder}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-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}
       - ENABLE_AI_CROSSCHECK=True
       - LOG_LEVEL=INFO
       - MAX_PDF_SIZE_MB=50
