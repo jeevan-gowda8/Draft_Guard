@@ -170,15 +170,41 @@ class CADComparatorEngine:
                 'category': 'dimension'
             })
 
+        # Render DXF modelspace layout to base64 PNG image
+        cad_preview_image = None
+        if dxf_doc:
+            try:
+                import io, base64
+                import matplotlib
+                matplotlib.use('Agg')
+                import matplotlib.pyplot as plt
+                from ezdxf.addons import drawing
+
+                fig = plt.figure(figsize=(10, 7), dpi=150)
+                ax = fig.add_axes([0, 0, 1, 1])
+                ax.set_axis_off()
+                ctx = drawing.RenderContext(dxf_doc)
+                out = drawing.matplotlib.MatplotlibBackend(ax)
+                drawing.Frontend(ctx, out).draw_layout(dxf_doc.modelspace(), finalize=True)
+                
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0.02, transparent=False, facecolor='white')
+                plt.close(fig)
+                buf.seek(0)
+                cad_preview_image = f"data:image/png;base64,{base64.b64encode(buf.read()).decode('utf-8')}"
+            except Exception as e:
+                print(f"Error rendering DXF image: {e}")
+
         return {
             'bbox': (round(min_x, 3), round(min_y, 3), round(max_x, 3), round(max_y, 3)),
             'width': round(width, 3),
             'height': round(height, 3),
             'units': unit_name,
             'entities_count': len(entities),
-            'entities': entities[:200],  # Return up to 200 for vector preview
+            'entities': entities[:500],  # Return up to 500 for vector preview
             'dimensions': dimensions,
-            'features': features
+            'features': features,
+            'preview_image': cad_preview_image
         }
 
     def _fallback_ascii_dxf_parse(self, file_path: str) -> Dict[str, Any]:
@@ -294,6 +320,15 @@ class CADComparatorEngine:
             {'name': 'Diagonal (PDF)', 'val': round(math.hypot(drawing_width_mm, drawing_height_mm), 3), 'unit': 'mm'},
         ]
 
+        pdf_preview_image = None
+        try:
+            import base64
+            pix = page.get_pixmap(dpi=150)
+            img_bytes = pix.tobytes("png")
+            pdf_preview_image = f"data:image/png;base64,{base64.b64encode(img_bytes).decode('utf-8')}"
+        except Exception as e:
+            print(f"Error rendering PDF page image: {e}")
+
         doc.close()
 
         drawing_paths = []
@@ -324,7 +359,8 @@ class CADComparatorEngine:
             'drawing_height_mm': round(drawing_height_mm, 3),
             'features': features,
             'text_callouts': callouts[:10],
-            'drawing_paths': drawing_paths[:150]
+            'drawing_paths': drawing_paths[:150],
+            'preview_image': pdf_preview_image
         }
 
     def compare(self, pdf_path: str, cad_path: str) -> Dict[str, Any]:
@@ -484,7 +520,8 @@ class CADComparatorEngine:
                 'height': cad_h,
                 'units': cad_data['units'],
                 'entities_count': cad_data['entities_count'],
-                'entities': cad_data['entities']
+                'entities': cad_data['entities'],
+                'preview_image': cad_data.get('preview_image')
             },
             'pdf_info': {
                 'width_mm': pdf_w,
@@ -492,7 +529,8 @@ class CADComparatorEngine:
                 'page_width_mm': pdf_data['page_width_mm'],
                 'page_height_mm': pdf_data['page_height_mm'],
                 'drawing_paths': pdf_data.get('drawing_paths', []),
-                'text_callouts': pdf_data.get('text_callouts', [])
+                'text_callouts': pdf_data.get('text_callouts', []),
+                'preview_image': pdf_data.get('preview_image')
             },
             'feature_matrix': feature_matrix,
             'verification_pipeline': {
