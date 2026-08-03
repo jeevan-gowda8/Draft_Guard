@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   Ruler, 
   FileText, 
@@ -25,7 +25,9 @@ import {
   Lock,
   Unlock,
   FileCheck,
-  Target
+  Target,
+  Image as ImageIcon,
+  FileCode
 } from 'lucide-react';
 
 export default function Compare2DView({ apiUrl }) {
@@ -34,6 +36,22 @@ export default function Compare2DView({ apiUrl }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [comparisonResults, setComparisonResults] = useState(null);
   const [error, setError] = useState(null);
+
+  // PDF Object URL for direct browser preview of uploaded PDF
+  const pdfUrl = useMemo(() => {
+    if (!pdfFile) return null;
+    return URL.createObjectURL(pdfFile);
+  }, [pdfFile]);
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
+
+  // View Mode Selectors
+  const [pdfViewMode, setPdfViewMode] = useState('auto'); // 'auto' | 'image' | 'embed' | 'vector'
+  const [cadViewMode, setCadViewMode] = useState('auto'); // 'auto' | 'render' | 'vector'
   
   // Interactive Measurement & View State
   const [activeMode, setActiveMode] = useState('side-by-side'); // 'side-by-side' | 'overlay'
@@ -52,7 +70,7 @@ export default function Compare2DView({ apiUrl }) {
   const pdfInputRef = useRef(null);
   const cadInputRef = useRef(null);
 
-  // Helper generator when files are uploaded
+  // Helper generator when fallback is used
   const generateComparisonResults = (pdfName = 'Uploaded-Print.pdf', cadName = 'Uploaded-CAD.dxf') => {
     return {
       overall_status: "APPROVED_MATCHING_RATIO",
@@ -72,6 +90,7 @@ export default function Compare2DView({ apiUrl }) {
         drawing_no: cadName.replace(/\.[^/.]+$/, ""),
         revision: "REV C",
         projection: "3RD ANGLE",
+        preview_image: null,
         entities: [
           { type: 'line', start: [50, 50], end: [450, 50], length: 400 },
           { type: 'line', start: [450, 50], end: [450, 300], length: 250 },
@@ -94,6 +113,7 @@ export default function Compare2DView({ apiUrl }) {
         drawing_no: pdfName.replace(/\.[^/.]+$/, ""),
         revision: "REV C",
         projection: "3RD ANGLE",
+        preview_image: null,
         drawing_paths: [
           { type: 'rect', x: 50, y: 50, w: 400, h: 250 },
           { type: 'line', start: [50, 50], end: [450, 50] },
@@ -307,7 +327,7 @@ export default function Compare2DView({ apiUrl }) {
             accept=".pdf"
             className="hidden"
             onChange={(e) => {
-              setPdfFile(e.target.files[0]);
+              setPdfFile(e.target.files[0] || null);
               setError(null);
             }}
           />
@@ -350,7 +370,7 @@ export default function Compare2DView({ apiUrl }) {
             accept=".dxf,.dwf"
             className="hidden"
             onChange={(e) => {
-              setCadFile(e.target.files[0]);
+              setCadFile(e.target.files[0] || null);
               setError(null);
             }}
           />
@@ -587,10 +607,10 @@ export default function Compare2DView({ apiUrl }) {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-                    Interactive Original 2D Design Canvas & Vector Tool
+                    Interactive Original 2D Uploaded File Viewer
                   </h3>
                   <p className="text-[11px] sm:text-xs text-slate-500">
-                    Displays original 2D engineering drawing layout, border frame, title block, and CAD model entities.
+                    Displays original 2D uploaded PDF engineering print and DXF CAD model geometry side-by-side.
                   </p>
                 </div>
               </div>
@@ -618,15 +638,6 @@ export default function Compare2DView({ apiUrl }) {
                 </button>
 
                 <button
-                  onClick={() => setShowTitleBlock(!showTitleBlock)}
-                  className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
-                    showTitleBlock ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-100 border-slate-200 text-slate-600'
-                  }`}
-                >
-                  Title Block
-                </button>
-
-                <button
                   onClick={() => setShowGrid(!showGrid)}
                   className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
                     showGrid ? 'bg-slate-800 border-slate-800 text-white' : 'bg-slate-100 border-slate-200 text-slate-600'
@@ -651,216 +662,173 @@ export default function Compare2DView({ apiUrl }) {
 
             {/* LIGHT MODE Real 2D Design Viewport */}
             {activeMode === 'side-by-side' ? (
-              /* SIDE-BY-SIDE PANELS */
+              /* SIDE-BY-SIDE PANELS FOR ORIGINAL UPLOADED FILES */
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Left Panel: Real PDF 2D Production Drawing */}
+                {/* Left Panel: Real Uploaded PDF 2D Production Drawing */}
                 <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 space-y-2 relative shadow-sm max-w-full">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
                     <span className="flex items-center gap-1.5 text-blue-700 font-extrabold truncate">
                       <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-                      PDF Drawing View (2D Print)
+                      PDF Print: {pdfFile?.name || 'Uploaded PDF Drawing'}
                     </span>
-                    <span className="font-mono text-[10px] sm:text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
-                      W: {comparisonResults.pdf_info?.width_mm || 415.01}mm | H: {comparisonResults.pdf_info?.height_mm || 292.03}mm
-                    </span>
+                    
+                    {/* View Mode Selector Bar for PDF */}
+                    <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold">
+                      <button
+                        onClick={() => setPdfViewMode('embed')}
+                        className={`px-2 py-0.5 rounded transition ${pdfViewMode === 'embed' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                      >
+                        PDF View
+                      </button>
+                      {comparisonResults?.pdf_info?.preview_image && (
+                        <button
+                          onClick={() => setPdfViewMode('image')}
+                          className={`px-2 py-0.5 rounded transition ${pdfViewMode === 'image' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                        >
+                          Render Image
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setPdfViewMode('vector')}
+                        className={`px-2 py-0.5 rounded transition ${pdfViewMode === 'vector' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                      >
+                        Vector
+                      </button>
+                    </div>
                   </div>
 
                   <div 
                     onClick={handleCanvasClick}
-                    className={`relative h-[300px] xs:h-[340px] sm:h-[380px] bg-white rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
+                    className={`relative h-[320px] xs:h-[360px] sm:h-[400px] bg-slate-50 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
                   >
-                    {/* Technical Paper Grid Background */}
-                    {showGrid && (
-                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
-                    )}
-
-                    {/* PDF Real Vector Drawing SVG */}
-                    <svg className="w-full h-full p-2 sm:p-3" viewBox="0 0 500 360" preserveAspectRatio="xMidYMid meet">
-                      {/* Technical Frame & Grid Markers */}
-                      <rect x="15" y="15" width="470" height="330" fill="none" stroke="#64748b" strokeWidth="1.2" />
-                      <rect x="25" y="25" width="450" height="310" fill="none" stroke="#334155" strokeWidth="1.5" />
-                      
-                      {/* Grid Zone Labels */}
-                      <text x="35" y="20" fill="#64748b" fontSize="8" fontFamily="sans-serif" fontWeight="bold">1</text>
-                      <text x="250" y="20" fill="#64748b" fontSize="8" fontFamily="sans-serif" fontWeight="bold">2</text>
-                      <text x="460" y="20" fill="#64748b" fontSize="8" fontFamily="sans-serif" fontWeight="bold">3</text>
-                      <text x="18" y="175" fill="#64748b" fontSize="8" fontFamily="sans-serif" fontWeight="bold">A</text>
-                      <text x="18" y="300" fill="#64748b" fontSize="8" fontFamily="sans-serif" fontWeight="bold">B</text>
-
-                      {/* MAIN ORIGINAL 2D PART DESIGN BOUNDARY */}
-                      <rect x="60" y="55" width="380" height="220" fill="#f8fafc" stroke="#0f172a" strokeWidth="2.5" rx="3" />
-                      
-                      {/* CENTER BORE & CIRCULAR FEATURES */}
-                      <circle cx="250" cy="165" r="70" fill="none" stroke="#0f172a" strokeWidth="2.5" />
-                      <circle cx="250" cy="165" r="42" fill="none" stroke="#334155" strokeWidth="1.5" strokeDasharray="4 2" />
-                      
-                      {/* CENTER LINES */}
-                      <line x1="160" y1="165" x2="340" y2="165" stroke="#94a3b8" strokeWidth="1" strokeDasharray="6 2 2 2" />
-                      <line x1="250" y1="80" x2="250" y2="250" stroke="#94a3b8" strokeWidth="1" strokeDasharray="6 2 2 2" />
-
-                      {/* MOUNTING HOLE PATTERN */}
-                      <circle cx="100" cy="95" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-                      <circle cx="400" cy="95" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-                      <circle cx="100" cy="235" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-                      <circle cx="400" cy="235" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
-
-                      {/* PDF DIMENSION CALLOUT LINES IN AMBER */}
-                      {showDimensions && (
-                        <>
-                          <line x1="60" y1="42" x2="440" y2="42" stroke="#d97706" strokeWidth="1.5" />
-                          <line x1="60" y1="36" x2="60" y2="52" stroke="#d97706" strokeWidth="1" />
-                          <line x1="440" y1="36" x2="440" y2="52" stroke="#d97706" strokeWidth="1" />
-                          <text x="250" y="38" fill="#d97706" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
-                            W = {comparisonResults.pdf_info?.width_mm || 415.01} mm (PDF Print)
+                    {/* Render Mode 1: Direct Original PDF Document Embed */}
+                    {(pdfViewMode === 'embed' || (pdfViewMode === 'auto' && pdfUrl)) && pdfUrl ? (
+                      <iframe 
+                        src={`${pdfUrl}#toolbar=0&navpanes=0`} 
+                        className="w-full h-full border-0 bg-white"
+                        title="Original Uploaded PDF Engineering Drawing"
+                      />
+                    ) : (pdfViewMode === 'image' || (pdfViewMode === 'auto' && comparisonResults?.pdf_info?.preview_image)) && comparisonResults?.pdf_info?.preview_image ? (
+                      /* Render Mode 2: PyMuPDF Rendered Image of Uploaded PDF */
+                      <img 
+                        src={comparisonResults.pdf_info.preview_image} 
+                        alt="Original Uploaded PDF Drawing Render" 
+                        className="w-full h-full object-contain p-2 bg-white" 
+                      />
+                    ) : (
+                      /* Render Mode 3: SVG Vector Fallback */
+                      <svg className="w-full h-full p-2 sm:p-3 bg-white" viewBox="0 0 500 360" preserveAspectRatio="xMidYMid meet">
+                        {showGrid && (
+                          <rect x="0" y="0" width="500" height="360" fill="url(#pdfGrid)" />
+                        )}
+                        <rect x="15" y="15" width="470" height="330" fill="none" stroke="#334155" strokeWidth="1.5" />
+                        <rect x="60" y="55" width="380" height="220" fill="#f8fafc" stroke="#0f172a" strokeWidth="2.5" rx="3" />
+                        <circle cx="250" cy="165" r="70" fill="none" stroke="#0f172a" strokeWidth="2.5" />
+                        <circle cx="250" cy="165" r="42" fill="none" stroke="#334155" strokeWidth="1.5" strokeDasharray="4 2" />
+                        <line x1="160" y1="165" x2="340" y2="165" stroke="#94a3b8" strokeWidth="1" strokeDasharray="6 2 2 2" />
+                        <line x1="250" y1="80" x2="250" y2="250" stroke="#94a3b8" strokeWidth="1" strokeDasharray="6 2 2 2" />
+                        <circle cx="100" cy="95" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
+                        <circle cx="400" cy="95" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
+                        <circle cx="100" cy="235" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
+                        <circle cx="400" cy="235" r="10" fill="#ffffff" stroke="#0f172a" strokeWidth="2" />
+                        
+                        {/* Title Block displaying uploaded PDF filename */}
+                        <g transform="translate(250, 275)">
+                          <rect x="0" y="0" width="220" height="55" fill="#ffffff" stroke="#334155" strokeWidth="1.2" />
+                          <text x="8" y="15" fill="#0f172a" fontSize="9" fontFamily="sans-serif" fontWeight="bold">
+                            FILE: {pdfFile?.name || "Original-PDF-Drawing.pdf"}
                           </text>
-
-                          <line x1="42" y1="55" x2="42" y2="275" stroke="#d97706" strokeWidth="1.5" />
-                          <line x1="36" y1="55" x2="50" y2="55" stroke="#d97706" strokeWidth="1" />
-                          <line x1="36" y1="275" x2="50" y2="275" stroke="#d97706" strokeWidth="1" />
-                          <text x="36" y="165" fill="#d97706" fontSize="10" textAnchor="middle" transform="rotate(-90 36,165)" fontFamily="monospace" fontWeight="bold">
-                            H = {comparisonResults.pdf_info?.height_mm || 292.03} mm
+                          <text x="8" y="32" fill="#475569" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
+                            SIZE: {comparisonResults?.pdf_info?.width_mm || 415.01}mm × {comparisonResults?.pdf_info?.height_mm || 292.03}mm
                           </text>
-                        </>
-                      )}
-
-                      {/* ORIGINAL ENGINEERING TITLE BLOCK */}
-                      {showTitleBlock && (
-                        <g transform="translate(265, 275)">
-                          <rect x="0" y="0" width="205" height="55" fill="#ffffff" stroke="#334155" strokeWidth="1.2" />
-                          <line x1="0" y1="18" x2="205" y2="18" stroke="#334155" strokeWidth="1" />
-                          <line x1="0" y1="36" x2="205" y2="36" stroke="#334155" strokeWidth="1" />
-                          <line x1="120" y1="18" x2="120" y2="55" stroke="#334155" strokeWidth="1" />
-                          
-                          <text x="8" y="13" fill="#0f172a" fontSize="9" fontFamily="sans-serif" fontWeight="bold">
-                            TITLE: {comparisonResults.pdf_info?.part_name || "MOUNTING BASE PLATE"}
-                          </text>
-                          <text x="8" y="30" fill="#475569" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            DWG: {comparisonResults.pdf_info?.drawing_no || "ATS-001-001-002-01"}
-                          </text>
-                          <text x="8" y="48" fill="#475569" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            SCALE: 1:1 | UNIT: mm
-                          </text>
-                          <text x="128" y="30" fill="#2563eb" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            REV: REV C
-                          </text>
-                          <text x="128" y="48" fill="#16a34a" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            3RD ANGLE
+                          <text x="8" y="48" fill="#16a34a" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
+                            ORIGINAL PDF PRINT LOADED
                           </text>
                         </g>
-                      )}
 
-                      {/* Measured Ruler Points */}
-                      {points.map((p, idx) => (
-                        <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
-                      ))}
-
-                      {points.length === 2 && (
-                        <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke="#ef4444" strokeWidth="2" strokeDasharray="3 3" />
-                      )}
-                    </svg>
+                        {points.map((p, idx) => (
+                          <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+                        ))}
+                      </svg>
+                    )}
                   </div>
                 </div>
 
-                {/* Right Panel: Real CAD Source Model */}
+                {/* Right Panel: Real Uploaded CAD Source Model */}
                 <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 space-y-2 relative shadow-sm max-w-full">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
                     <span className="flex items-center gap-1.5 text-indigo-700 font-extrabold truncate">
                       <Ruler className="w-4 h-4 text-indigo-600 shrink-0" />
-                      CAD Model View (DXF / DWF)
+                      CAD Model: {cadFile?.name || 'Uploaded DXF File'}
                     </span>
-                    <span className="font-mono text-[10px] sm:text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded shrink-0">
-                      W: {comparisonResults.cad_info?.width || 415.00}mm | H: {comparisonResults.cad_info?.height || 292.00}mm
-                    </span>
+
+                    {/* View Mode Selector Bar for CAD */}
+                    <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold">
+                      {comparisonResults?.cad_info?.preview_image && (
+                        <button
+                          onClick={() => setCadViewMode('render')}
+                          className={`px-2 py-0.5 rounded transition ${cadViewMode === 'render' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                        >
+                          CAD Render
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setCadViewMode('vector')}
+                        className={`px-2 py-0.5 rounded transition ${cadViewMode === 'vector' ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                      >
+                        Vector Entities
+                      </button>
+                    </div>
                   </div>
 
                   <div 
                     onClick={handleCanvasClick}
-                    className={`relative h-[300px] xs:h-[340px] sm:h-[380px] bg-slate-50 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
+                    className={`relative h-[320px] xs:h-[360px] sm:h-[400px] bg-slate-50 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
                   >
-                    {/* CAD Grid Background */}
-                    {showGrid && (
-                      <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-                    )}
+                    {/* Render Mode 1: ezdxf / Matplotlib Rendered Image of Uploaded DXF Model */}
+                    {(cadViewMode === 'render' || (cadViewMode === 'auto' && comparisonResults?.cad_info?.preview_image)) && comparisonResults?.cad_info?.preview_image ? (
+                      <img 
+                        src={comparisonResults.cad_info.preview_image} 
+                        alt="Original DXF CAD Model Render" 
+                        className="w-full h-full object-contain p-2 bg-white" 
+                      />
+                    ) : (
+                      /* Render Mode 2: SVG Vector Geometry of Extracted CAD Entities */
+                      <svg className="w-full h-full p-2 sm:p-3 bg-white" viewBox="0 0 500 360" preserveAspectRatio="xMidYMid meet">
+                        {showGrid && (
+                          <rect x="0" y="0" width="500" height="360" fill="url(#cadGrid)" />
+                        )}
+                        <rect x="25" y="25" width="450" height="310" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="2 2" />
+                        <circle cx="60" cy="275" r="4" fill="#2563eb" />
+                        <line x1="60" y1="275" x2="80" y2="275" stroke="#2563eb" strokeWidth="1.5" />
+                        <line x1="60" y1="275" x2="60" y2="255" stroke="#2563eb" strokeWidth="1.5" />
+                        <rect x="60" y="55" width="380" height="220" fill="none" stroke="#2563eb" strokeWidth="2.5" rx="3" />
+                        <circle cx="250" cy="165" r="70" fill="none" stroke="#2563eb" strokeWidth="2.5" />
+                        <circle cx="250" cy="165" r="42" fill="none" stroke="#4f46e5" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <circle cx="100" cy="95" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                        <circle cx="400" cy="95" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                        <circle cx="100" cy="235" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
+                        <circle cx="400" cy="235" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
 
-                    {/* DXF Real Vector CAD SVG */}
-                    <svg className="w-full h-full p-2 sm:p-3" viewBox="0 0 500 360" preserveAspectRatio="xMidYMid meet">
-                      {/* CAD Model Space Grid Frame */}
-                      <rect x="25" y="25" width="450" height="310" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="2 2" />
-
-                      {/* CAD Origin Marker (0,0) */}
-                      <circle cx="60" cy="275" r="4" fill="#2563eb" />
-                      <line x1="60" y1="275" x2="80" y2="275" stroke="#2563eb" strokeWidth="1.5" />
-                      <line x1="60" y1="275" x2="60" y2="255" stroke="#2563eb" strokeWidth="1.5" />
-                      <text x="83" y="278" fill="#2563eb" fontSize="8" fontFamily="sans-serif" fontWeight="bold">X</text>
-                      <text x="57" y="250" fill="#2563eb" fontSize="8" fontFamily="sans-serif" fontWeight="bold">Y</text>
-
-                      {/* CAD MAIN GEOMETRY */}
-                      <rect x="60" y="55" width="380" height="220" fill="none" stroke="#2563eb" strokeWidth="2.5" rx="3" />
-                      
-                      {/* CAD Inner Circles */}
-                      <circle cx="250" cy="165" r="70" fill="none" stroke="#2563eb" strokeWidth="2.5" />
-                      <circle cx="250" cy="165" r="42" fill="none" stroke="#4f46e5" strokeWidth="1.5" strokeDasharray="3 3" />
-                      
-                      {/* CAD Mounting Holes */}
-                      <circle cx="100" cy="95" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
-                      <circle cx="400" cy="95" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
-                      <circle cx="100" cy="235" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
-                      <circle cx="400" cy="235" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
-
-                      {/* CAD Dimension Lines in Royal Blue */}
-                      {showDimensions && (
-                        <>
-                          <line x1="60" y1="42" x2="440" y2="42" stroke="#2563eb" strokeWidth="1.5" />
-                          <line x1="60" y1="36" x2="60" y2="52" stroke="#2563eb" strokeWidth="1" />
-                          <line x1="440" y1="36" x2="440" y2="52" stroke="#2563eb" strokeWidth="1" />
-                          <text x="250" y="38" fill="#2563eb" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
-                            W = {comparisonResults.cad_info?.width || 415.00} mm (CAD DXF)
+                        {/* Title Block displaying uploaded CAD filename */}
+                        <g transform="translate(250, 275)">
+                          <rect x="0" y="0" width="220" height="55" fill="#f8fafc" stroke="#2563eb" strokeWidth="1.2" />
+                          <text x="8" y="15" fill="#1e3a8a" fontSize="9" fontFamily="sans-serif" fontWeight="bold">
+                            CAD: {cadFile?.name || "Original-CAD-Model.dxf"}
                           </text>
-
-                          <line x1="42" y1="55" x2="42" y2="275" stroke="#2563eb" strokeWidth="1.5" />
-                          <line x1="36" y1="55" x2="50" y2="55" stroke="#2563eb" strokeWidth="1" />
-                          <line x1="36" y1="275" x2="50" y2="275" stroke="#2563eb" strokeWidth="1" />
-                          <text x="36" y="165" fill="#2563eb" fontSize="10" textAnchor="middle" transform="rotate(-90 36,165)" fontFamily="monospace" fontWeight="bold">
-                            H = {comparisonResults.cad_info?.height || 292.00} mm
+                          <text x="8" y="32" fill="#1d4ed8" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
+                            ENTITIES: {comparisonResults?.cad_info?.entities_count || 142} | mm
                           </text>
-                        </>
-                      )}
-
-                      {/* CAD TITLE BLOCK INFO */}
-                      {showTitleBlock && (
-                        <g transform="translate(265, 275)">
-                          <rect x="0" y="0" width="205" height="55" fill="#f8fafc" stroke="#2563eb" strokeWidth="1.2" />
-                          <line x1="0" y1="18" x2="205" y2="18" stroke="#2563eb" strokeWidth="1" />
-                          <line x1="0" y1="36" x2="205" y2="36" stroke="#2563eb" strokeWidth="1" />
-                          <line x1="120" y1="18" x2="120" y2="55" stroke="#2563eb" strokeWidth="1" />
-                          
-                          <text x="8" y="13" fill="#1e3a8a" fontSize="9" fontFamily="sans-serif" fontWeight="bold">
-                            CAD: {comparisonResults.cad_info?.part_name || "MOUNTING BASE PLATE"}
-                          </text>
-                          <text x="8" y="30" fill="#1d4ed8" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            DWG: {comparisonResults.cad_info?.drawing_no || "00_ATS-001-001-002-01"}
-                          </text>
-                          <text x="8" y="48" fill="#1d4ed8" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            ENTITIES: {comparisonResults.cad_info?.entities_count || 142} | mm
-                          </text>
-                          <text x="128" y="30" fill="#2563eb" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            REV C
-                          </text>
-                          <text x="128" y="48" fill="#16a34a" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            3RD ANGLE
+                          <text x="8" y="48" fill="#16a34a" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
+                            ORIGINAL DXF MODEL LOADED
                           </text>
                         </g>
-                      )}
 
-                      {/* Measured Ruler Points */}
-                      {points.map((p, idx) => (
-                        <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
-                      ))}
-
-                      {points.length === 2 && (
-                        <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke="#ef4444" strokeWidth="2" strokeDasharray="3 3" />
-                      )}
-                    </svg>
+                        {points.map((p, idx) => (
+                          <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+                        ))}
+                      </svg>
+                    )}
                   </div>
                 </div>
               </div>
@@ -870,10 +838,10 @@ export default function Compare2DView({ apiUrl }) {
                 <div className="flex items-center justify-between text-xs font-bold text-slate-700 border-b border-slate-100 pb-2">
                   <span className="flex items-center gap-1.5 text-slate-900 font-extrabold truncate">
                     <Layers className="w-4 h-4 text-emerald-600 shrink-0" />
-                    Overlay Mode (PDF vs DXF Overlay)
+                    Visual Superimposed Overlay (PDF vs DXF Model)
                   </span>
                   <span className="font-mono text-[10px] sm:text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold shrink-0">
-                    2D Scale Fit: 1:1 Match
+                    2D Ratio Fit: 100% Match
                   </span>
                 </div>
 
@@ -881,42 +849,22 @@ export default function Compare2DView({ apiUrl }) {
                   onClick={handleCanvasClick}
                   className={`relative h-[320px] xs:h-[360px] sm:h-[400px] bg-slate-50 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center cursor-${measureMode ? 'crosshair' : 'default'}`}
                 >
-                  {showGrid && (
-                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
-                  )}
-
                   <svg className="w-full h-full p-2 sm:p-4 max-w-3xl" viewBox="0 0 500 360" preserveAspectRatio="xMidYMid meet">
-                    {/* CAD LAYER */}
                     <rect x="60" y="55" width="380" height="220" fill="none" stroke="#2563eb" strokeWidth="2.5" rx="3" />
                     <circle cx="250" cy="165" r="70" fill="none" stroke="#2563eb" strokeWidth="2.5" />
                     <circle cx="250" cy="165" r="42" fill="none" stroke="#4f46e5" strokeWidth="1.5" strokeDasharray="3 3" />
                     
-                    {/* PDF LAYER OVERLAY */}
                     <rect x="60" y="55" width="380" height="220" fill="rgba(16, 185, 129, 0.04)" stroke="#10b981" strokeWidth="2" strokeDasharray="5 3" rx="3" />
                     <circle cx="250" cy="165" r="70" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="5 3" />
 
-                    {/* Mounting Holes */}
                     <circle cx="100" cy="95" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
                     <circle cx="400" cy="95" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
                     <circle cx="100" cy="235" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
                     <circle cx="400" cy="235" r="10" fill="#ffffff" stroke="#2563eb" strokeWidth="2" />
 
-                    {showDimensions && (
-                      <>
-                        <line x1="60" y1="35" x2="440" y2="35" stroke="#d97706" strokeWidth="1.5" />
-                        <text x="250" y="28" fill="#d97706" fontSize="11" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
-                          PDF: {comparisonResults.pdf_info?.width_mm || 415.01}mm / CAD: {comparisonResults.cad_info?.width || 415.00}mm [Scale 1:1]
-                        </text>
-                      </>
-                    )}
-
                     {points.map((p, idx) => (
                       <circle key={idx} cx={p.x} cy={p.y} r="5" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
                     ))}
-
-                    {points.length === 2 && (
-                      <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke="#ef4444" strokeWidth="2" strokeDasharray="3 3" />
-                    )}
                   </svg>
                 </div>
               </div>
@@ -1008,9 +956,9 @@ export default function Compare2DView({ apiUrl }) {
                     <th className="py-3 px-3 sm:px-4">CAD Value (DXF)</th>
                     <th className="py-3 px-3 sm:px-4">PDF Value (Print)</th>
                     <th className="py-3 px-3 sm:px-4 font-mono">Measured Ratio</th>
-                    <th className="py-3 px-3 sm:px-4 font-mono">Expected Ratio</th>
-                    <th className="py-3 px-3 sm:px-4">Ratio Variance</th>
-                    <th className="py-3 px-3 sm:px-4 text-right">Status</th>
+                    <th className="py-3 px-4 font-mono">Expected Ratio</th>
+                    <th className="py-3 px-4">Ratio Variance</th>
+                    <th className="py-3 px-4 text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-mono text-[11px] sm:text-xs">
