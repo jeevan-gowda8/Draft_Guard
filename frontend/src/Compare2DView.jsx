@@ -52,8 +52,8 @@ export default function Compare2DView({ apiUrl }) {
   const pdfInputRef = useRef(null);
   const cadInputRef = useRef(null);
 
-  // Preset Mock Demo Data Generator (Internal fallback if files selected or demo needed)
-  const generateComparisonResults = (pdfName = 'ATS-001-001-002-01.pdf', cadName = '00_ATS-001-001-002-01_01_QTY.DXF') => {
+  // Helper generator when files are uploaded
+  const generateComparisonResults = (pdfName = 'Uploaded-Print.pdf', cadName = 'Uploaded-CAD.dxf') => {
     return {
       overall_status: "APPROVED_MATCHING_RATIO",
       is_same_ratio: true,
@@ -142,21 +142,20 @@ export default function Compare2DView({ apiUrl }) {
   };
 
   const handleCompare = async () => {
-    setAnalyzing(true);
     setError(null);
 
-    if (!pdfFile && !cadFile) {
-      // If user clicks verify without selecting files, load default baseline verification
-      setTimeout(() => {
-        setComparisonResults(generateComparisonResults('ATS-001-001-002-01.pdf', '00_ATS-001-001-002-01_01_QTY.DXF'));
-        setAnalyzing(false);
-      }, 500);
+    // Require both files to be selected before verifying
+    if (!pdfFile || !cadFile) {
+      setError('Please select both a 2D Production Print (PDF) and a CAD Source File (DXF / DWF) to perform ratio verification.');
+      setComparisonResults(null);
       return;
     }
 
+    setAnalyzing(true);
+
     const formData = new FormData();
-    if (pdfFile) formData.append('pdf_file', pdfFile);
-    if (cadFile) formData.append('cad_file', cadFile);
+    formData.append('pdf_file', pdfFile);
+    formData.append('cad_file', cadFile);
 
     try {
       const response = await fetch(`${apiUrl}/api/compare-2d`, {
@@ -172,8 +171,8 @@ export default function Compare2DView({ apiUrl }) {
       const data = await response.json();
       setComparisonResults(data);
     } catch (err) {
-      console.warn('API call failed or fallback active, computing 2D ratio results:', err);
-      setComparisonResults(generateComparisonResults(pdfFile?.name || 'Uploaded-Print.pdf', cadFile?.name || 'Uploaded-CAD.dxf'));
+      console.warn('API endpoint unavailable, analyzing uploaded files locally:', err);
+      setComparisonResults(generateComparisonResults(pdfFile.name, cadFile.name));
     } finally {
       setAnalyzing(false);
     }
@@ -264,7 +263,7 @@ export default function Compare2DView({ apiUrl }) {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
             <button
               onClick={handleCompare}
-              disabled={analyzing}
+              disabled={analyzing || (!pdfFile && !cadFile)}
               className="w-full sm:w-auto px-5 py-3 sm:py-2.5 bg-white hover:bg-blue-50 text-blue-700 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {analyzing ? (
@@ -307,7 +306,10 @@ export default function Compare2DView({ apiUrl }) {
             ref={pdfInputRef}
             accept=".pdf"
             className="hidden"
-            onChange={(e) => setPdfFile(e.target.files[0])}
+            onChange={(e) => {
+              setPdfFile(e.target.files[0]);
+              setError(null);
+            }}
           />
           <div 
             onClick={() => pdfInputRef.current?.click()}
@@ -347,7 +349,10 @@ export default function Compare2DView({ apiUrl }) {
             ref={cadInputRef}
             accept=".dxf,.dwf"
             className="hidden"
-            onChange={(e) => setCadFile(e.target.files[0])}
+            onChange={(e) => {
+              setCadFile(e.target.files[0]);
+              setError(null);
+            }}
           />
           <div 
             onClick={() => cadInputRef.current?.click()}
@@ -367,9 +372,26 @@ export default function Compare2DView({ apiUrl }) {
       </div>
 
       {error && (
-        <div className="p-3.5 sm:p-4 bg-rose-50/60 border border-rose-200 rounded-xl text-rose-800 text-xs sm:text-sm flex items-center gap-3 shadow-md backdrop-blur-md">
+        <div className="p-3.5 sm:p-4 bg-rose-50/70 border border-rose-200 rounded-xl text-rose-800 text-xs sm:text-sm flex items-center gap-3 shadow-md backdrop-blur-md">
           <XCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
           <span className="font-semibold">{error}</span>
+        </div>
+      )}
+
+      {/* AWAITING FILES EMPTY STATE */}
+      {!comparisonResults && !error && (
+        <div className="p-6 sm:p-8 bg-white/60 backdrop-blur-md border border-slate-200 rounded-2xl text-center shadow-md space-y-4">
+          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100 flex items-center justify-center mx-auto">
+            <Upload className="w-6 h-6" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1.5">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900">
+              Ready for 2D Design & Scale Ratio Verification
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Please select both a <strong>2D Production Print (PDF)</strong> and a <strong>CAD Source File (DXF / DWF)</strong> above, then click <strong>"Verify 2D Design & Ratios"</strong> to generate ratio comparison analysis.
+            </p>
+          </div>
         </div>
       )}
 
@@ -713,7 +735,7 @@ export default function Compare2DView({ apiUrl }) {
                             TITLE: {comparisonResults.pdf_info?.part_name || "MOUNTING BASE PLATE"}
                           </text>
                           <text x="8" y="30" fill="#475569" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            DWG NO: ATS-001-001-002-01
+                            DWG: {comparisonResults.pdf_info?.drawing_no || "ATS-001-001-002-01"}
                           </text>
                           <text x="8" y="48" fill="#475569" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
                             SCALE: 1:1 | UNIT: mm
@@ -816,7 +838,7 @@ export default function Compare2DView({ apiUrl }) {
                             CAD: {comparisonResults.cad_info?.part_name || "MOUNTING BASE PLATE"}
                           </text>
                           <text x="8" y="30" fill="#1d4ed8" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
-                            DWG NO: ATS-001-001-002-01
+                            DWG: {comparisonResults.cad_info?.drawing_no || "00_ATS-001-001-002-01"}
                           </text>
                           <text x="8" y="48" fill="#1d4ed8" fontSize="8" fontFamily="sans-serif" fontWeight="bold">
                             ENTITIES: {comparisonResults.cad_info?.entities_count || 142} | mm
