@@ -21,6 +21,7 @@ import {
   Moon
 } from 'lucide-react';
 import Compare2DView from './Compare2DView';
+import LandingPage from './LandingPage';
 
 export default function App() {
   const [file, setFile] = useState(null);
@@ -420,315 +421,27 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="auth-page-wrapper select-none bg-slate-50 relative overflow-hidden">
-        
-        {/* Smooth Animated Background Glow Orbs */}
-        <div className="absolute top-[-15%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-400/15 blur-[140px] pointer-events-none animate-ambient-glow-1" />
-        <div className="absolute bottom-[10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-400/15 blur-[150px] pointer-events-none animate-ambient-glow-2" />
-
-        {/* Fixed High-Tech CAD Background Image */}
-        <div 
-          className="fixed inset-0 bg-cover bg-center pointer-events-none opacity-20 mix-blend-multiply z-0"
-          style={{ backgroundImage: `url('/landing_hero_bg.png')` }}
-        />
-
-        {/* Header / Navbar */}
-        <header className="fixed top-0 left-0 right-0 z-40 px-8 py-5 flex items-center justify-between border-b border-slate-200/40 bg-white/30 backdrop-blur-md transition-all">
-          <div className="flex items-center gap-3">
-            <div className="p-1 bg-white rounded-xl shadow-md border border-slate-100 flex items-center justify-center">
-              <img src="/logo.png" className="w-8 h-8 object-contain" alt="DraftGuard Logo" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent tracking-tight">
-                DraftGuard
-              </h1>
-              <p className="text-[10px] text-slate-500 font-medium">Engineering Document QA Suite</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600 mr-2">
-              <a href="#features" onClick={(e) => handleScrollToSection(e, 'features')} className="hover:text-slate-900 transition">Features</a>
-              <a href="#how-it-works" onClick={(e) => handleScrollToSection(e, 'how-it-works')} className="hover:text-slate-900 transition">Workflow</a>
-              <a href="#stats" onClick={(e) => handleScrollToSection(e, 'stats')} className="hover:text-slate-900 transition">Metrics</a>
-            </div>
-            <button
-              onClick={() => { setAuthMode('login'); setAuthError(''); setShowAuthModal(true); }}
-              className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => { setAuthMode('register'); setAuthError(''); setShowAuthModal(true); }}
-              className="hidden sm:inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-100 transition-all cursor-pointer"
-            >
-              Get Started
-            </button>
-          </div>
-        </header>
-
-        {/* Landing Page Content */}
-        <div className="flex-1 pt-[89px]">
-          {/* Hero Section */}
-          <section className="max-w-6xl mx-auto px-6 pt-16 lg:pt-24 pb-12 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-28 items-center">
-              
-              {/* Left Column: Floating Blueprint Card Graphic */}
-              <div className="lg:col-span-7 order-2 lg:order-1 select-none w-full animate-float-hero">
-                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xl relative">
-                  <div className="aspect-[1.5] bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col justify-between font-mono">
-                    <div className="w-full h-full border border-slate-300 rounded p-6 relative flex flex-col justify-between">
-                      {/* Schematic Geometry */}
-                      <div className="flex-1 flex items-center justify-center relative">
-                        <div className="w-64 h-24 border-2 border-slate-700 rounded-lg flex items-center justify-center bg-white">
-                          <div className="w-14 h-14 rounded-full border border-slate-400 flex items-center justify-center">
-                            <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status Badges */}
-                      <div className="absolute bottom-3 left-3 p-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-[10px] font-bold text-left">
-                        ⚠️ Missing DWG NO.
-                      </div>
-                      <div className="absolute bottom-3 right-3 p-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-[10px] font-bold text-left">
-                        ✓ ISO Compliant
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Hero copy and CTAs */}
-              <div className="lg:col-span-5 order-1 lg:order-2 text-center lg:text-left">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold mb-6 border border-blue-100">
-                  <span>✨</span> Automated Drafting QA Engine
-                </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                  Verify Technical Drawing Completeness Instantly
-                </h1>
-                <p className="text-sm sm:text-base text-slate-500 font-medium mt-6 leading-relaxed">
-                  DraftGuard parses title block metadata, compares PDF 2D prints against DXF/DWF CAD models, measures geometric ratios, and flags missing fields.
-                </p>
-                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                  <button
-                    onClick={() => { setAuthMode('register'); setAuthError(''); setShowAuthModal(true); }}
-                    className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    Start Analyzing Drawings
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <a
-                    href="#features"
-                    onClick={(e) => handleScrollToSection(e, 'features')}
-                    className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm rounded-2xl transition cursor-pointer flex items-center justify-center"
-                  >
-                    Explore Features
-                  </a>
-                </div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* Updated Features Grid */}
-          <section id="features" className="max-w-6xl mx-auto px-6 py-16 border-t border-slate-200/60 relative z-10">
-            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Advanced Drafting Verification Features
-              </h2>
-              <p className="text-sm text-slate-500 font-medium">
-                Comprehensive quality inspection suite for engineering production prints and CAD source files.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Feature 1: 2D Design Ratio Comparator */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
-                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
-                  <FileCheck className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">2D Design Ratio Comparator</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Compares 2D PDF drawings against DXF/DWF CAD models, measures geometric features, and verifies scale ratio fidelity with instant discrepancy alerts.
-                </p>
-              </div>
-
-              {/* Feature 2: Title Block Auditing */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
-                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100">
-                  <FileCheck className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">Title Block Completeness</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Automatically parses title block metadata like revisions, drawing numbers, materials, scales, signatures, dates, and sheet sizes.
-                </p>
-              </div>
-
-              {/* Feature 3: Interactive Canvas & Ruler */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
-                <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center border border-purple-100">
-                  <Settings2 className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">Interactive Canvas & Point Ruler</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Renders side-by-side or overlaid 2D designs in high-DPI Light Mode with point-to-point live measurement tools.
-                </p>
-              </div>
-
-              {/* Feature 4: Local Security & Storage */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 text-left hover:border-blue-300 hover:shadow-md transition">
-                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">Encrypted Local Security</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Stores accounts and drawing audit stats securely in a local database file, guaranteeing enterprise privacy and data isolation.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* How It Works Workflow */}
-          <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-16 border-t border-slate-200/60 text-center relative z-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-12">
-              Three-Step Quality Checklist
-            </h2>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-12 max-w-4xl mx-auto">
-              <div className="flex-1 flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center text-lg font-bold">1</div>
-                <h3 className="text-sm font-bold text-slate-800">Upload PDF</h3>
-                <p className="text-xs text-slate-400 font-medium">Drag-and-drop your born-digital or scanned engineering sheet.</p>
-              </div>
-              <div className="hidden md:block text-slate-300">→</div>
-              <div className="flex-1 flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center text-lg font-bold">2</div>
-                <h3 className="text-sm font-bold text-slate-800">Run Engine Analysis</h3>
-                <p className="text-xs text-slate-400 font-medium">Auto-crosscheck cells, dates, signatures, and ISO borders.</p>
-              </div>
-              <div className="hidden md:block text-slate-300">→</div>
-              <div className="flex-1 flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center text-lg font-bold">3</div>
-                <h3 className="text-sm font-bold text-slate-800">Download Reports</h3>
-                <p className="text-xs text-slate-400 font-medium">Export standardized JSON compliance reports instantly.</p>
-              </div>
-            </div>
-          </section>
-
-          {/* Stats section */}
-          <section id="stats" className="max-w-6xl mx-auto px-6 py-12 border-t border-slate-200/60 text-center relative z-10 mb-12 animate-fade-in">
-            <div className="bg-slate-900 rounded-3xl p-8 sm:p-12 text-white text-center shadow-xl">
-              <h2 className="text-xl sm:text-2xl font-bold mb-8">Ready to secure your drafting pipelines?</h2>
-              <button
-                onClick={() => { setAuthMode('register'); setAuthError(''); setShowAuthModal(true); }}
-                className="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-2xl shadow-lg transition-all duration-200 cursor-pointer inline-flex items-center gap-2"
-              >
-                Get Started Free
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </section>
-        </div>
-
-        {/* Footer */}
-        <footer className="py-6 border-t border-slate-200/50 text-center bg-white/30 backdrop-blur-md z-10">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            DraftGuard Systems © {new Date().getFullYear()} — Secure Drafting Quality Assurance
-          </p>
-        </footer>
-
-        {/* Auth Modal Overlay */}
-        {showAuthModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in">
-            <div className="relative w-full max-w-md">
-              {/* Close button */}
-              <button 
-                onClick={() => setShowAuthModal(false)}
-                className="absolute right-4 top-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
-                aria-label="Close form"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              
-              {/* Login/Register Card Container */}
-              <div className="auth-card-container">
-                <div className="text-center mb-8">
-                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100/50">
-                    <ShieldCheck className="w-6 h-6" />
-                  </div>
-                  <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                    {authMode === 'login' ? 'Welcome Back' : 'Create Account'}
-                  </h2>
-                  <p className="text-sm text-slate-500 mt-2 font-medium">
-                    {authMode === 'login' ? 'Sign in to access drawing QA tools' : 'Register to start analyzing technical drawings'}
-                  </p>
-                </div>
-
-                {authError && (
-                  <div className="mb-6 p-4 bg-red-50/70 border border-red-200 text-red-700 rounded-2xl text-xs font-semibold flex items-center gap-2.5">
-                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <span>{authError}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleAuthSubmit} className="space-y-5 animate-fade-in">
-                  <div>
-                    <label htmlFor="auth-username" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Username</label>
-                    <input 
-                      id="auth-username"
-                      name="username"
-                      type="text" 
-                      required
-                      placeholder="Enter your username"
-                      value={authUsername}
-                      onChange={(e) => setAuthUsername(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 font-medium shadow-inner"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="auth-password" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password</label>
-                    <input 
-                      id="auth-password"
-                      name="password"
-                      type="password" 
-                      required
-                      placeholder="••••••••"
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 font-medium shadow-inner"
-                    />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={authLoading}
-                    className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 mt-4"
-                  >
-                    {authLoading ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      authMode === 'login' ? 'Sign In' : 'Sign Up'
-                    )}
-                  </button>
-                </form>
-
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-                  <button 
-                    onClick={() => {
-                      setAuthMode(authMode === 'login' ? 'register' : 'login');
-                      setAuthError('');
-                    }}
-                    className="text-xs text-blue-600 hover:text-blue-800 font-bold transition-all"
-                  >
-                    {authMode === 'login' ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <LandingPage 
+        onOpenAuth={(mode) => {
+          setAuthMode(mode);
+          setAuthError('');
+          setShowAuthModal(true);
+        }}
+        apiOnline={apiOnline}
+        handleScrollToSection={handleScrollToSection}
+        showAuthModal={showAuthModal}
+        setShowAuthModal={setShowAuthModal}
+        authMode={authMode}
+        setAuthMode={setAuthMode}
+        authUsername={authUsername}
+        setAuthUsername={setAuthUsername}
+        authPassword={authPassword}
+        setAuthPassword={setAuthPassword}
+        authError={authError}
+        setAuthError={setAuthError}
+        authLoading={authLoading}
+        handleAuthSubmit={handleAuthSubmit}
+      />
     );
   }
 
