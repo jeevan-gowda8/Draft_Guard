@@ -13,9 +13,11 @@ import shutil
 import sys
 sys.path.append(str(Path(__file__).resolve().parent))
 
-from database import init_db, get_db, User
+from database import init_db, get_db, User, AnalysisHistory, purge_expired_history
 from auth import hash_password, verify_password, create_access_token, decode_access_token
 from detection_engine import FormDetectionEngine
+from datetime import datetime, timedelta
+import json
 
 app = FastAPI(
     title="DraftGuard API",
@@ -264,6 +266,135 @@ async def get_me(credentials: HTTPAuthorizationCredentials = Depends(security), 
         "full_name": getattr(user, 'full_name', None),
         "role": user.role
     }
+
+class SaveHistoryRequest(BaseModel):
+    file_name: str
+    completeness: float
+    status: str
+    detection_method: str | None = None
+    total_fields: int = 0
+    filled_fields: int = 0
+    incomplete_fields: int = 0
+    results: dict | None = None
+
+@app.get("/api/history")
+async def get_history(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    """
+    Get 5-day analysis history for current user.
+    Automatically purges items older than 5 days.
+    """
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid session token")
+    username = payload.get("sub")
+    
+    # Auto-purge expired records
+    purge_expired_history(db)
+    
+    now = datetime.utcnow()
+    records = db.query(AnalysisHistory).filter(
+        AnalysisHistory.username == username,
+        AnalysisHistory.expires_at > now
+    ).order_by(AnalysisHistory.created_at.desc()).all()
+    
+    items = []
+    for r in records:
+        time_left = r.expires_at - now
+        days_left = max(0.0, round(time_left.total_seconds() / 86400, 1))
+        
+        parsed_results = None
+        if r.results_json:
+            try:
+                parsed_results = json.loads(r.results_json)
+            except Exception:
+                pass
+                
+        items.append({
+            "id": r.id,
+            "fileName": r.file_name,
+            "completeness": r.completeness,
+            "status": r.status,
+            "detectionMethod": r.detection_method,
+            "totalFields": r.total_fields,
+            "filledFields": r.filled_fields,
+            "incompleteFields": r.incomplete_fields,
+            "results": parsed_results,
+            "createdAt": r.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "expiresAt": r.expires_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "daysRemaining": days_left
+        })
+        
+    return {"history": items, "retentionDays": 5}
+
+@app.post("/api/history")
+async def save_history(data: SaveHistoryRequest, credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    """
+    Save an analysis result to user history with a strict 5-day expiration timestamp.
+    """
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid session token")
+    username = payload.get("sub")
+    
+    user = db.query(User).filter(User.username == username).first()
+    
+    now = datetime.utcnow()
+    expires_at = now + timedelta(days=5)
+    
+    history_entry = AnalysisHistory(
+        user_id=user.id if user else None,
+        username=username,
+        file_name=data.file_name,
+        completeness=data.completeness,
+        status=data.status,
+        detection_method=data.detection_method,
+        total_fields=data.total_fields,
+        filled_fields=data.filled_fields,
+        incomplete_fields=data.incomplete_fields,
+        results_json=json.dumps(data.results) if data.results else None,
+        created_at=now,
+        expires_at=expires_at
+    )
+    
+    db.add(history_entry)
+    db.commit()
+    db.refresh(history_entry)
+    
+    return {"status": "saved", "id": history_entry.id, "expiresAt": expires_at.strftime("%Y-%m-%d %H:%M:%S")}
+
+@app.delete("/api/history/{history_id}")
+async def delete_history_item(history_id: int, credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid session token")
+    username = payload.get("sub")
+    
+    entry = db.query(AnalysisHistory).filter(
+        AnalysisHistory.id == history_id,
+        AnalysisHistory.username == username
+    ).first()
+    
+    if not entry:
+        raise HTTPException(status_code=404, detail="History entry not found")
+        
+    db.delete(entry)
+    db.commit()
+    return {"status": "deleted", "id": history_id}
+
+@app.delete("/api/history")
+async def clear_all_history(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid session token")
+    username = payload.get("sub")
+    
+    db.query(AnalysisHistory).filter(AnalysisHistory.username == username).delete()
+    db.commit()
+    return {"status": "cleared"}
 
 if __name__ == "__main__":
     import uvicorn

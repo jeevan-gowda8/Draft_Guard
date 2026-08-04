@@ -18,7 +18,11 @@ import {
   ShieldCheck,
   Settings2,
   Sun,
-  Moon
+  Moon,
+  Clock,
+  Trash2,
+  Search,
+  Filter
 } from 'lucide-react';
 import Compare2DView from './Compare2DView';
 import LandingPage from './LandingPage';
@@ -27,6 +31,7 @@ export default function App() {
   const [file, setFile] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
+  const [results2D, setResults2D] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [useRealApi, setUseRealApi] = useState(false);
@@ -37,12 +42,18 @@ export default function App() {
   // Authentication states
   const [token, setToken] = useState(localStorage.getItem('draftguard_token') || null);
   const [user, setUser] = useState(null);
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
   const [authUsername, setAuthUsername] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // History 5-day state
+  const [historyList, setHistoryList] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyFilter, setHistoryFilter] = useState('all');
 
   // Settings
   const [vectorGrid, setVectorGrid] = useState(true);
@@ -115,8 +126,111 @@ export default function App() {
     }
   };
 
+  const fetchHistory = async () => {
+    setHistoryLoading(true);
+    if (token && apiOnline) {
+      try {
+        const response = await fetch(`${apiUrl}/api/history`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setHistoryList(data.history || []);
+          setHistoryLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('API history fetch failed, falling back to local history:', err);
+      }
+    }
+
+    // LocalStorage Fallback for 5-day history
+    try {
+      const raw = localStorage.getItem('draftguard_history') || '[]';
+      const parsed = JSON.parse(raw);
+      const now = Date.now();
+      const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
+      
+      // Auto-purge entries older than 5 days
+      const validEntries = parsed.filter(item => {
+        const itemTime = new Date(item.createdAt).getTime();
+        return (now - itemTime) < FIVE_DAYS_MS;
+      });
+
+      if (validEntries.length !== parsed.length) {
+        localStorage.setItem('draftguard_history', JSON.stringify(validEntries));
+      }
+
+      setHistoryList(validEntries);
+    } catch (e) {
+      console.error('Error loading local history:', e);
+      setHistoryList([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const saveToHistory = async (resultObj) => {
+    const now = new Date();
+    const expires = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+    
+    const newEntry = {
+      id: Date.now(),
+      fileName: resultObj.fileName,
+      completeness: resultObj.completeness,
+      status: resultObj.status,
+      detectionMethod: resultObj.detectionMethod,
+      totalFields: resultObj.titleBlock?.totalFields || 0,
+      filledFields: resultObj.titleBlock?.filledFields || 0,
+      incompleteFields: resultObj.titleBlock?.incompleteFields || 0,
+      results: resultObj,
+      createdAt: now.toLocaleString(),
+      expiresAt: expires.toLocaleString(),
+      daysRemaining: 5.0
+    };
+
+    if (token && apiOnline) {
+      try {
+        await fetch(`${apiUrl}/api/history`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            file_name: resultObj.fileName,
+            completeness: resultObj.completeness,
+            status: resultObj.status,
+            detection_method: resultObj.detectionMethod,
+            total_fields: resultObj.titleBlock?.totalFields || 0,
+            filled_fields: resultObj.titleBlock?.filledFields || 0,
+            incomplete_fields: resultObj.titleBlock?.incompleteFields || 0,
+            results: resultObj
+          })
+        });
+        fetchHistory();
+        return;
+      } catch (err) {
+        console.warn('Failed to save history to API:', err);
+      }
+    }
+
+    try {
+      const raw = localStorage.getItem('draftguard_history') || '[]';
+      const parsed = JSON.parse(raw);
+      const updated = [newEntry, ...parsed];
+      localStorage.setItem('draftguard_history', JSON.stringify(updated));
+      setHistoryList(updated);
+    } catch (e) {
+      console.error('Error saving local history:', e);
+    }
+  };
+
   useEffect(() => {
     checkApiHealth();
+    fetchHistory();
   }, []);
 
   useEffect(() => {
@@ -178,7 +292,11 @@ export default function App() {
       setAuthUsername('');
       setAuthPassword('');
     } catch (err) {
-      setAuthError(err.message);
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        setAuthError('Cannot connect to backend server. Please verify "python app.py" is running on port 8000.');
+      } else {
+        setAuthError(err.message);
+      }
     } finally {
       setAuthLoading(false);
     }
@@ -322,6 +440,7 @@ export default function App() {
     };
 
     setResults(mockResults);
+    saveToHistory(mockResults);
     setCurrentPageIndex(0);
     setActiveTab('visualizer');
     setAnalyzing(false);
@@ -350,6 +469,7 @@ export default function App() {
 
       const data = await response.json();
       setResults(data);
+      saveToHistory(data);
       setActiveTab('visualizer');
     } catch (err) {
       console.error('API Error:', err);
@@ -567,6 +687,7 @@ export default function App() {
             <nav className="space-y-1">
               {[
                 { id: 'compare2d', label: '2D Design Ratio' },
+                { id: 'history', label: 'Analysis History (5 Days)' },
                 { id: 'overview', label: 'Overview Metrics' },
                 { id: 'details', label: 'Field Details' },
                 { id: 'settings', label: 'Parameters & Rules' }
@@ -575,6 +696,7 @@ export default function App() {
                   key={tab.id}
                   onClick={() => { 
                     setActiveTab(tab.id); 
+                    if (tab.id === 'history') fetchHistory();
                     if (window.innerWidth < 1024) {
                       setSidebarOpen(false);
                     }
@@ -585,7 +707,10 @@ export default function App() {
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
-                  <span>{tab.label}</span>
+                  <span className="flex items-center gap-2">
+                    {tab.id === 'history' && <Clock className="w-4 h-4 text-blue-500" />}
+                    <span>{tab.label}</span>
+                  </span>
                   <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === tab.id ? 'rotate-90 text-blue-500' : 'text-slate-400'}`} />
                 </button>
               ))}
@@ -735,7 +860,217 @@ export default function App() {
           )}
 
           {activeTab === 'compare2d' ? (
-            <Compare2DView apiUrl={apiUrl} />
+            <Compare2DView apiUrl={apiUrl} onSaveHistory={saveToHistory} externalResults={results2D} />
+          ) : activeTab === 'history' ? (
+            /* History View Panel with 5-Day Auto-Purge */
+            <div className="max-w-5xl mx-auto space-y-6 animate-fade-in font-sans">
+              
+              {/* Page Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-md">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Drawing Analysis History</h2>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Logged history of analyzed technical drawings. Entries are retained for <span className="font-bold text-blue-600">5 days</span> and purged automatically.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={fetchHistory}
+                    className="px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${historyLoading ? 'animate-spin text-blue-600' : ''}`} />
+                    Refresh
+                  </button>
+                  {historyList.length > 0 && (
+                    <button
+                      onClick={async () => {
+                        if (confirm('Are you sure you want to clear all history entries?')) {
+                          if (token && apiOnline) {
+                            try {
+                              await fetch(`${apiUrl}/api/history`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                              });
+                            } catch (e) {}
+                          }
+                          localStorage.removeItem('draftguard_history');
+                          setHistoryList([]);
+                        }
+                      }}
+                      className="px-3 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Clear All
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Auto-Purge Alert Banner */}
+              <div className="p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl flex items-center justify-between gap-3 text-amber-900 shadow-sm text-xs font-medium">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-amber-100 rounded-lg text-amber-700 border border-amber-200 flex-shrink-0">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-amber-900">Automatic 5-Day Data Retention Policy Active</span>
+                    <p className="text-[11px] text-amber-700 mt-0.5">Files older than 5 days are permanently purged from server and local caches to enforce data privacy.</p>
+                  </div>
+                </div>
+                <span className="hidden md:inline-block px-2.5 py-1 bg-amber-200/70 border border-amber-300 rounded-full text-[10px] font-extrabold text-amber-900 uppercase">
+                  5-Day Retention
+                </span>
+              </div>
+
+              {/* Filter & Search Bar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="relative w-full sm:w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Search by drawing filename..."
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <Filter className="w-3.5 h-3.5" /> Filter:
+                  </span>
+                  {['all', 'incomplete', 'complete'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setHistoryFilter(f)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition ${
+                        historyFilter === f 
+                          ? 'bg-blue-600 text-white shadow-sm' 
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* History List Items */}
+              {historyLoading ? (
+                <div className="py-16 text-center space-y-3">
+                  <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
+                  <p className="text-xs font-bold text-slate-500">Loading analysis history...</p>
+                </div>
+              ) : historyList.filter(item => {
+                  const matchesSearch = item.fileName?.toLowerCase().includes(historySearch.toLowerCase());
+                  const matchesFilter = historyFilter === 'all' || item.status === historyFilter;
+                  return matchesSearch && matchesFilter;
+                }).length === 0 ? (
+                <div className="bg-white/60 border border-dashed border-slate-300 rounded-3xl p-12 text-center space-y-3">
+                  <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">No History Entries Found</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    {historySearch || historyFilter !== 'all' 
+                      ? 'No drawings match your search or filter criteria.' 
+                      : 'Analyzed technical drawings will automatically appear here and remain saved for 5 days.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {historyList
+                    .filter(item => {
+                      const matchesSearch = item.fileName?.toLowerCase().includes(historySearch.toLowerCase());
+                      const matchesFilter = historyFilter === 'all' || item.status === historyFilter;
+                      return matchesSearch && matchesFilter;
+                    })
+                    .map(item => (
+                      <div 
+                        key={item.id}
+                        className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <span className="font-bold text-slate-900 text-sm">{item.fileName}</span>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                              item.status === 'complete' 
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
+                                : 'bg-rose-100 text-rose-800 border border-rose-200'
+                            }`}>
+                              {item.status}
+                            </span>
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full text-[10px] font-semibold flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-blue-500" />
+                              Expires in {item.daysRemaining || 5} days
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-4 text-xs text-slate-500 font-medium flex-wrap">
+                            <span>Analyzed: <strong className="text-slate-700">{item.createdAt}</strong></span>
+                            <span>Completeness: <strong className="text-slate-900 font-extrabold">{item.completeness}%</strong></span>
+                            <span>Fields: <strong className="text-emerald-600">{item.filledFields} filled</strong> / <strong className="text-rose-600">{item.incompleteFields} missing</strong></span>
+                          </div>
+
+                          {/* Meter bar */}
+                          <div className="w-full sm:w-64 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                item.completeness >= 85 ? 'bg-emerald-500' : item.completeness >= 60 ? 'bg-amber-500' : 'bg-rose-500'
+                              }`}
+                              style={{ width: `${item.completeness}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 self-end sm:self-center">
+                          {item.results && (
+                            <button
+                              onClick={() => {
+                                if (item.results?.type === 'compare2d' || (item.detectionMethod && item.detectionMethod.includes('Scale Ratio'))) {
+                                  setResults2D(item.results.compareDetails || item.results);
+                                  setActiveTab('compare2d');
+                                } else {
+                                  setResults(item.results);
+                                  setActiveTab('visualizer');
+                                }
+                              }}
+                              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <span>Inspect</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <button
+                            onClick={async () => {
+                              if (token && apiOnline && typeof item.id === 'number') {
+                                try {
+                                  await fetch(`${apiUrl}/api/history/${item.id}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                  });
+                                } catch (e) {}
+                              }
+                              const updated = historyList.filter(h => h.id !== item.id);
+                              setHistoryList(updated);
+                              localStorage.setItem('draftguard_history', JSON.stringify(updated));
+                            }}
+                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer"
+                            title="Delete from history"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+            </div>
           ) : !results && !analyzing ? (
             // Upload UI
             <div className="max-w-3xl mx-auto space-y-8">
