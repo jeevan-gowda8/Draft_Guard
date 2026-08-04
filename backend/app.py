@@ -182,6 +182,8 @@ async def health_check():
 class UserRegister(BaseModel):
     username: str
     password: str
+    email: str | None = None
+    full_name: str | None = None
 
 class UserLogin(BaseModel):
     username: str
@@ -201,7 +203,13 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already exists")
         
     password_hash = hash_password(user_data.password)
-    new_user = User(username=username_clean, password_hash=password_hash, role="user")
+    new_user = User(
+        username=username_clean, 
+        email=user_data.email.strip() if user_data.email else None,
+        full_name=user_data.full_name.strip() if user_data.full_name else None,
+        password_hash=password_hash, 
+        role="user"
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -213,6 +221,8 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         "user": {
             "id": new_user.id,
             "username": new_user.username,
+            "email": new_user.email,
+            "full_name": new_user.full_name,
             "role": new_user.role
         }
     }
@@ -231,6 +241,8 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
         "user": {
             "id": user.id,
             "username": user.username,
+            "email": getattr(user, 'email', None),
+            "full_name": getattr(user, 'full_name', None),
             "role": user.role
         }
     }
@@ -248,6 +260,8 @@ async def get_me(credentials: HTTPAuthorizationCredentials = Depends(security), 
     return {
         "id": user.id,
         "username": user.username,
+        "email": getattr(user, 'email', None),
+        "full_name": getattr(user, 'full_name', None),
         "role": user.role
     }
 

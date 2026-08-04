@@ -143,22 +143,28 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleAuthSubmit = async (e) => {
-    e.preventDefault();
+  const handleAuthSubmit = async (e, extraPayload = {}) => {
+    if (e && e.preventDefault) e.preventDefault();
     setAuthError('');
     setAuthLoading(true);
 
     const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
     try {
+      const payload = authMode === 'login'
+        ? { username: authUsername, password: authPassword }
+        : {
+            username: authUsername,
+            password: authPassword,
+            email: extraPayload.email || '',
+            full_name: extraPayload.fullName || ''
+          };
+
       const response = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          username: authUsername,
-          password: authPassword
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();

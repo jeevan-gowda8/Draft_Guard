@@ -26,7 +26,10 @@ import {
   FileCode,
   Sliders,
   Check,
-  Menu
+  Menu,
+  User,
+  Mail,
+  EyeOff
 } from 'lucide-react';
 
 export default function LandingPage({ 
@@ -59,6 +62,30 @@ export default function LandingPage({
 
   // Mobile Navigation Menu Open State
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Additional Sign Up Form States
+  const [authFullName, setAuthFullName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authConfirmPassword, setAuthConfirmPassword] = useState('');
+  const [authAgreeTerms, setAuthAgreeTerms] = useState(false);
+  const [showPasswordToggle, setShowPasswordToggle] = useState(false);
+
+  const onLocalAuthSubmit = (e) => {
+    e.preventDefault();
+    if (authMode === 'register') {
+      if (authPassword !== authConfirmPassword) {
+        setAuthError('Passwords do not match');
+        return;
+      }
+      if (!authAgreeTerms) {
+        setAuthError('Please agree to the Terms of Service to create your account');
+        return;
+      }
+      handleAuthSubmit(e, { fullName: authFullName, email: authEmail });
+    } else {
+      handleAuthSubmit(e);
+    }
+  };
 
   // Sample Drawing Data for Interactive Playground
   const samples = [
@@ -1162,13 +1189,13 @@ export default function LandingPage({
 
       {/* Auth Modal Overlay */}
       {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-md my-8">
             
             {/* Close button */}
             <button 
               onClick={() => setShowAuthModal(false)}
-              className="absolute right-4 top-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+              className="absolute right-4 top-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer z-10"
               aria-label="Close form"
             >
               <X className="w-5 h-5" />
@@ -1176,68 +1203,258 @@ export default function LandingPage({
             
             {/* Login/Register Card Container */}
             <div className="auth-card-container">
-              <div className="text-center mb-8">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100/50">
-                  <ShieldCheck className="w-6 h-6" />
+              
+              {/* Header Title */}
+              <div className="text-center mb-6">
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-blue-100/50 shadow-xs">
+                  <ShieldCheck className="w-6 h-6 text-blue-600" />
                 </div>
                 <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  {authMode === 'login' ? 'Welcome Back' : 'Create Account'}
+                  {authMode === 'login' ? 'Welcome Back' : 'Create Your Account'}
                 </h2>
-                <p className="text-sm text-slate-500 mt-2 font-medium">
-                  {authMode === 'login' ? 'Sign in to access drawing QA tools' : 'Register to start analyzing technical drawings'}
+                <p className="text-xs sm:text-sm text-slate-500 mt-1.5 font-medium">
+                  {authMode === 'login' ? 'Sign in to access your drawing QA workspace' : 'Join engineering teams securing technical drawing releases'}
                 </p>
               </div>
 
+              {/* Mode Switch Tabs */}
+              <div className="flex items-center p-1 bg-slate-100 rounded-2xl mb-6 text-xs font-extrabold">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('login'); setAuthError(''); }}
+                  className={`flex-1 py-2 rounded-xl transition ${authMode === 'login' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('register'); setAuthError(''); }}
+                  className={`flex-1 py-2 rounded-xl transition ${authMode === 'register' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  Create Account
+                </button>
+              </div>
+
+              {/* Error Banner */}
               {authError && (
-                <div className="mb-6 p-4 bg-red-50/70 border border-red-200 text-red-700 rounded-2xl text-xs font-semibold flex items-center gap-2.5">
+                <div className="mb-5 p-3.5 bg-red-50/80 border border-red-200 text-red-700 rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-fade-in">
                   <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <span>{authError}</span>
                 </div>
               )}
 
-              <form onSubmit={handleAuthSubmit} className="space-y-5 animate-fade-in">
-                <div>
-                  <label htmlFor="auth-username" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Username</label>
-                  <input 
-                    id="auth-username"
-                    name="username"
-                    type="text" 
-                    required
-                    placeholder="Enter your username"
-                    value={authUsername}
-                    onChange={(e) => setAuthUsername(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 font-medium shadow-inner"
-                  />
-                </div>
+              <form onSubmit={onLocalAuthSubmit} className="space-y-3.5 animate-fade-in">
+                
+                {authMode === 'register' ? (
+                  <>
+                    {/* Row 1: Full Name & Work Email in 2 columns */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="auth-fullname" className="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Full Name
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <User className="w-3.5 h-3.5" />
+                          </div>
+                          <input 
+                            id="auth-fullname"
+                            name="fullName"
+                            type="text" 
+                            required
+                            placeholder="Sarah Jenkins"
+                            value={authFullName}
+                            onChange={(e) => setAuthFullName(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium shadow-xs"
+                          />
+                        </div>
+                      </div>
 
-                <div>
-                  <label htmlFor="auth-password" className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password</label>
-                  <input 
-                    id="auth-password"
-                    name="password"
-                    type="password" 
-                    required
-                    placeholder="••••••••"
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 font-medium shadow-inner"
-                  />
-                </div>
+                      <div>
+                        <label htmlFor="auth-email" className="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Work Email
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <Mail className="w-3.5 h-3.5" />
+                          </div>
+                          <input 
+                            id="auth-email"
+                            name="email"
+                            type="email" 
+                            required
+                            placeholder="engineer@co.com"
+                            value={authEmail}
+                            onChange={(e) => setAuthEmail(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium shadow-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
 
+                    {/* Row 2: Username */}
+                    <div>
+                      <label htmlFor="auth-username" className="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        Username
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-extrabold text-xs">
+                          @
+                        </div>
+                        <input 
+                          id="auth-username"
+                          name="username"
+                          type="text" 
+                          required
+                          placeholder="username"
+                          value={authUsername}
+                          onChange={(e) => setAuthUsername(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium shadow-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Row 3: Password & Confirm Password in 2 columns */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="auth-password" className="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Password
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <Lock className="w-3.5 h-3.5" />
+                          </div>
+                          <input 
+                            id="auth-password"
+                            name="password"
+                            type={showPasswordToggle ? 'text' : 'password'} 
+                            required
+                            placeholder="••••••••"
+                            value={authPassword}
+                            onChange={(e) => setAuthPassword(e.target.value)}
+                            className="w-full pl-9 pr-7 py-2 bg-slate-50 border border-slate-200/90 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:bg-white transition-all font-medium shadow-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPasswordToggle(!showPasswordToggle)}
+                            className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                          >
+                            {showPasswordToggle ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="auth-confirm-password" className="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Confirm
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <Lock className="w-3.5 h-3.5" />
+                          </div>
+                          <input 
+                            id="auth-confirm-password"
+                            name="confirmPassword"
+                            type={showPasswordToggle ? 'text' : 'password'} 
+                            required
+                            placeholder="••••••••"
+                            value={authConfirmPassword}
+                            onChange={(e) => setAuthConfirmPassword(e.target.value)}
+                            className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-xl text-slate-800 text-xs focus:outline-none focus:bg-white transition-all font-medium shadow-xs ${
+                              authConfirmPassword && authConfirmPassword !== authPassword 
+                                ? 'border-rose-300 bg-rose-50/30' 
+                                : 'border-slate-200/90 focus:border-blue-500'
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Terms Checkbox */}
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <input 
+                        id="auth-terms"
+                        type="checkbox" 
+                        required
+                        checked={authAgreeTerms}
+                        onChange={(e) => setAuthAgreeTerms(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                      <label htmlFor="auth-terms" className="text-[11px] text-slate-600 font-medium leading-tight cursor-pointer">
+                        I agree to DraftGuard <span className="text-blue-600 font-bold hover:underline">Terms</span> & <span className="text-blue-600 font-bold hover:underline">Privacy Policy</span>.
+                      </label>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* SIGN IN FORM (Matching Screenshot) */}
+                    <div>
+                      <label htmlFor="auth-username" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        Username
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-extrabold text-xs">
+                          @
+                        </div>
+                        <input 
+                          id="auth-username"
+                          name="username"
+                          type="text" 
+                          required
+                          placeholder="jeevan"
+                          value={authUsername}
+                          onChange={(e) => setAuthUsername(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 font-medium shadow-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="auth-password" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <input 
+                          id="auth-password"
+                          name="password"
+                          type={showPasswordToggle ? 'text' : 'password'} 
+                          required
+                          placeholder="••••••••"
+                          value={authPassword}
+                          onChange={(e) => setAuthPassword(e.target.value)}
+                          className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-slate-800 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 font-medium shadow-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPasswordToggle(!showPasswordToggle)}
+                          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                        >
+                          {showPasswordToggle ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Submit Button */}
                 <button 
                   type="submit" 
                   disabled={authLoading}
-                  className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:bg-blue-400 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 mt-4"
+                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:bg-blue-400 text-white rounded-2xl font-bold text-sm shadow-md shadow-blue-500/20 hover:shadow-blue-500/35 transition-all cursor-pointer flex items-center justify-center gap-2 mt-3"
                 >
                   {authLoading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    authMode === 'login' ? 'Sign In' : 'Sign Up'
+                    authMode === 'login' ? 'Sign In to Workspace' : 'Create Account'
                   )}
                 </button>
               </form>
 
-              <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+              {/* Toggle Mode Link Footer */}
+              <div className="mt-6 pt-5 border-t border-slate-100 text-center">
                 <button 
                   onClick={() => {
                     setAuthMode(authMode === 'login' ? 'register' : 'login');
@@ -1245,9 +1462,10 @@ export default function LandingPage({
                   }}
                   className="text-xs text-blue-600 hover:text-blue-800 font-bold transition-all"
                 >
-                  {authMode === 'login' ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
+                  {authMode === 'login' ? "Don't have an account? Create one now" : 'Already registered? Sign In'}
                 </button>
               </div>
+
             </div>
           </div>
         </div>
