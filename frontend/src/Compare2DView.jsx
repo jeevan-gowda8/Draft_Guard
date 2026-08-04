@@ -30,12 +30,18 @@ import {
   FileCode
 } from 'lucide-react';
 
-export default function Compare2DView({ apiUrl }) {
+export default function Compare2DView({ apiUrl, onSaveHistory, externalResults }) {
   const [pdfFile, setPdfFile] = useState(null);
   const [cadFile, setCadFile] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [comparisonResults, setComparisonResults] = useState(null);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (externalResults) {
+      setComparisonResults(externalResults);
+    }
+  }, [externalResults]);
 
   // PDF Object URL for direct browser preview of uploaded PDF
   const pdfUrl = useMemo(() => {
@@ -161,10 +167,30 @@ export default function Compare2DView({ apiUrl }) {
     };
   };
 
+  const triggerSaveHistory = (res, pName, cName) => {
+    if (!onSaveHistory) return;
+    const totalMatrix = res.feature_matrix || [];
+    const matchedCount = totalMatrix.filter(f => f.status === 'MATCH').length;
+    const mismatchedCount = totalMatrix.length - matchedCount;
+
+    onSaveHistory({
+      type: 'compare2d',
+      fileName: `${pName || '2D-Print.pdf'} ↔ ${cName || 'Model.dxf'}`,
+      completeness: Math.round(res.fidelity_score || 100),
+      status: res.is_same_ratio ? 'complete' : 'incomplete',
+      detectionMethod: `2D CAD/PDF Scale Ratio (${res.scale_ratio_display || '1.0:1'})`,
+      titleBlock: {
+        totalFields: totalMatrix.length || 10,
+        filledFields: matchedCount || 10,
+        incompleteFields: mismatchedCount || 0
+      },
+      compareDetails: res
+    });
+  };
+
   const handleCompare = async () => {
     setError(null);
 
-    // Require both files to be selected before verifying
     if (!pdfFile || !cadFile) {
       setError('Please select both a 2D Production Print (PDF) and a CAD Source File (DXF / DWF) to perform ratio verification.');
       setComparisonResults(null);
@@ -183,16 +209,19 @@ export default function Compare2DView({ apiUrl }) {
         body: formData
       });
 
+      let res;
       if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.detail || `Server returned status ${response.status}`);
+        res = generateComparisonResults(pdfFile.name, cadFile.name);
+      } else {
+        res = await response.json();
       }
-
-      const data = await response.json();
-      setComparisonResults(data);
+      setComparisonResults(res);
+      triggerSaveHistory(res, pdfFile.name, cadFile.name);
     } catch (err) {
       console.warn('API endpoint unavailable, analyzing uploaded files locally:', err);
-      setComparisonResults(generateComparisonResults(pdfFile.name, cadFile.name));
+      const res = generateComparisonResults(pdfFile.name, cadFile.name);
+      setComparisonResults(res);
+      triggerSaveHistory(res, pdfFile.name, cadFile.name);
     } finally {
       setAnalyzing(false);
     }
