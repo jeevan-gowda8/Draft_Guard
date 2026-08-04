@@ -230,12 +230,6 @@ export default function LandingPage({
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Health Status Indicator */}
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-slate-100 border border-slate-200 rounded-full text-[11px] font-semibold text-slate-600">
-            <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
-            <span>{apiOnline ? 'API Connected' : 'Local Mode'}</span>
-          </div>
-
           <button
             onClick={() => onOpenAuth('login')}
             className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 rounded-xl text-xs font-bold transition-all duration-150 shadow-sm cursor-pointer hover:border-slate-300"
@@ -310,14 +304,10 @@ export default function LandingPage({
             </a>
           </div>
 
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-              <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
-              <span>{apiOnline ? 'API Connected' : 'Local Mode'}</span>
-            </div>
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end">
             <button
               onClick={() => { onOpenAuth('register'); setMobileMenuOpen(false); }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20"
+              className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 text-center"
             >
               Get Started Free
             </button>
