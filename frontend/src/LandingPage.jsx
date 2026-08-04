@@ -25,7 +25,8 @@ import {
   Cpu,
   FileCode,
   Sliders,
-  Check
+  Check,
+  Menu
 } from 'lucide-react';
 
 export default function LandingPage({ 
@@ -55,6 +56,9 @@ export default function LandingPage({
 
   // Hero CAD Interactive State
   const [heroViewMode, setHeroViewMode] = useState('audit'); // 'audit' or 'raw'
+
+  // Mobile Navigation Menu Open State
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Sample Drawing Data for Interactive Playground
   const samples = [
@@ -183,13 +187,13 @@ export default function LandingPage({
       />
 
       {/* Header / Top Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-8 py-4 flex items-center justify-between border-b border-slate-200/60 bg-white/70 backdrop-blur-md transition-all shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-white rounded-xl shadow-md shadow-blue-500/10 border border-slate-100 flex items-center justify-center">
-            <img src="/logo.png" className="w-8 h-8 object-contain" alt="DraftGuard Logo" />
+      <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between border-b border-slate-200/60 bg-white/80 backdrop-blur-md transition-all shadow-sm">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="p-1 sm:p-1.5 bg-white rounded-xl shadow-md shadow-blue-500/10 border border-slate-100 flex items-center justify-center">
+            <img src="/logo.png" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" alt="DraftGuard Logo" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <h1 className="text-base sm:text-lg font-extrabold bg-gradient-to-r from-slate-900 via-blue-950 to-slate-800 bg-clip-text text-transparent tracking-tight">
                 DraftGuard
               </h1>
@@ -201,7 +205,7 @@ export default function LandingPage({
           </div>
         </div>
         
-        {/* Nav Links */}
+        {/* Desktop Nav Links */}
         <div className="hidden lg:flex items-center gap-7 text-xs font-bold text-slate-600">
           <a href="#live-demo" onClick={(e) => handleScrollToSection(e, 'live-demo')} className="hover:text-blue-600 transition flex items-center gap-1">
             <Eye className="w-3.5 h-3.5 text-blue-500" />
@@ -225,7 +229,7 @@ export default function LandingPage({
         </div>
 
         {/* Header Right Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Health Status Indicator */}
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-slate-100 border border-slate-200 rounded-full text-[11px] font-semibold text-slate-600">
             <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
@@ -234,19 +238,92 @@ export default function LandingPage({
 
           <button
             onClick={() => onOpenAuth('login')}
-            className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 rounded-xl text-xs font-bold transition-all duration-150 shadow-sm cursor-pointer hover:border-slate-300"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 rounded-xl text-xs font-bold transition-all duration-150 shadow-sm cursor-pointer hover:border-slate-300"
           >
             Sign In
           </button>
           <button
             onClick={() => onOpenAuth('register')}
-            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 hover:shadow-blue-500/35 transition-all duration-200 cursor-pointer flex items-center gap-1"
+            className="hidden xs:flex px-3.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 hover:shadow-blue-500/35 transition-all duration-200 cursor-pointer items-center gap-1"
           >
             <span>Get Started</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
+
+          {/* Mobile Menu Toggle Hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </header>
+
+      {/* Mobile Drawer Menu Panel */}
+      {mobileMenuOpen && (
+        <div className="fixed top-[65px] left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200 p-5 shadow-xl lg:hidden animate-fade-in font-sans space-y-4">
+          <div className="flex flex-col space-y-3 text-sm font-extrabold text-slate-700">
+            <a 
+              href="#live-demo" 
+              onClick={(e) => { handleScrollToSection(e, 'live-demo'); setMobileMenuOpen(false); }} 
+              className="p-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition flex items-center gap-2"
+            >
+              <Eye className="w-4 h-4 text-blue-500" />
+              <span>Interactive Demo</span>
+            </a>
+            <a 
+              href="#features" 
+              onClick={(e) => { handleScrollToSection(e, 'features'); setMobileMenuOpen(false); }} 
+              className="p-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+              Features
+            </a>
+            <a 
+              href="#standards" 
+              onClick={(e) => { handleScrollToSection(e, 'standards'); setMobileMenuOpen(false); }} 
+              className="p-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+              Standards & Formats
+            </a>
+            <a 
+              href="#how-it-works" 
+              onClick={(e) => { handleScrollToSection(e, 'how-it-works'); setMobileMenuOpen(false); }} 
+              className="p-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+              Workflow
+            </a>
+            <a 
+              href="#stats" 
+              onClick={(e) => { handleScrollToSection(e, 'stats'); setMobileMenuOpen(false); }} 
+              className="p-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+              Metrics & Impact
+            </a>
+            <a 
+              href="#faq" 
+              onClick={(e) => { handleScrollToSection(e, 'faq'); setMobileMenuOpen(false); }} 
+              className="p-2.5 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition"
+            >
+              FAQ
+            </a>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+              <span className={`w-2 h-2 rounded-full ${apiOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+              <span>{apiOnline ? 'API Connected' : 'Local Mode'}</span>
+            </div>
+            <button
+              onClick={() => { onOpenAuth('register'); setMobileMenuOpen(false); }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20"
+            >
+              Get Started Free
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Landing Content Container */}
       <main className="flex-1 pt-[76px] relative z-10">
@@ -321,102 +398,106 @@ export default function LandingPage({
 
             {/* Right Column: Interactive Hero CAD Inspection Mockup Card */}
             <div className="lg:col-span-6 animate-float-hero">
-              <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl relative group overflow-hidden">
+              <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl p-3.5 sm:p-6 shadow-2xl relative group overflow-hidden">
                 
                 {/* Visualizer Card Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full bg-rose-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <span className="text-xs font-mono font-bold text-slate-500 ml-2">A3_CAD_DRAWING_AUDIT_V2.PDF</span>
+                <div className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-slate-100 mb-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500"></div>
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500"></div>
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500"></div>
+                    </div>
+                    <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-500 truncate max-w-[110px] xs:max-w-[160px] sm:max-w-none">
+                      A3_CAD_DRAWING_AUDIT.PDF
+                    </span>
                   </div>
                   
-                  {/* Toggle Mode */}
-                  <div className="flex items-center p-1 bg-slate-100 rounded-xl text-[11px] font-bold">
+                  {/* Mode Toggle */}
+                  <div className="flex items-center p-0.5 sm:p-1 bg-slate-100 rounded-xl text-[10px] sm:text-[11px] font-extrabold flex-shrink-0">
                     <button 
                       onClick={() => setHeroViewMode('audit')}
-                      className={`px-3 py-1 rounded-lg transition ${heroViewMode === 'audit' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                      className={`px-2 sm:px-3 py-1 rounded-lg transition whitespace-nowrap ${heroViewMode === 'audit' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                     >
                       AI Audit View
                     </button>
                     <button 
                       onClick={() => setHeroViewMode('raw')}
-                      className={`px-3 py-1 rounded-lg transition ${heroViewMode === 'raw' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                      className={`px-2 sm:px-3 py-1 rounded-lg transition whitespace-nowrap ${heroViewMode === 'raw' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                     >
                       Raw PDF
                     </button>
                   </div>
                 </div>
 
-                {/* Blueprint Interactive Display Area (Light Mode Paper Grid) */}
-                <div className="relative aspect-[1.4] bg-slate-50 rounded-2xl border-2 border-slate-300/80 overflow-hidden font-mono p-4 flex flex-col justify-between select-none shadow-inner">
+                {/* Blueprint Interactive Display Area (Light Mode Paper Grid - Fully Mobile Responsive) */}
+                <div className="relative aspect-auto sm:aspect-[1.4] min-h-[260px] sm:min-h-[320px] bg-slate-50 rounded-2xl border-2 border-slate-300/80 overflow-hidden font-mono p-3 sm:p-4 flex flex-col justify-between select-none shadow-inner">
                   
                   {/* Grid Lines Overlay */}
-                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:20px_20px] opacity-70"></div>
+                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:16px_16px] sm:bg-[size:20px_20px] opacity-70"></div>
+
+                  {/* Top Status Flags in Audit Mode (Clean Non-Overlapping Layout) */}
+                  {heroViewMode === 'audit' && (
+                    <div className="relative z-20 flex flex-col xs:flex-row items-stretch xs:items-center justify-between gap-1.5 mb-2">
+                      {/* Floating Issue Badge */}
+                      <div className="px-2.5 py-1 bg-rose-500 text-white rounded-lg text-[9px] sm:text-[10px] font-extrabold shadow-sm border border-rose-400 flex items-center justify-center gap-1 animate-pulse whitespace-nowrap">
+                        <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                        <span>2 CRITICAL FIELDS MISSING</span>
+                      </div>
+
+                      {/* Floating Accuracy Badge */}
+                      <div className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[9px] sm:text-[10px] font-extrabold shadow-sm border border-emerald-500 flex items-center justify-center gap-1 whitespace-nowrap">
+                        <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                        <span>ISO 7200 BORDER VERIFIED</span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* CAD Geometry Graphics (2D Part Outline in Light Mode) */}
-                  <div className="relative z-10 flex-1 flex items-center justify-center">
-                    <div className="relative w-64 h-32 border-2 border-slate-800 rounded-xl flex items-center justify-center bg-white shadow-sm">
+                  <div className="relative z-10 flex-1 flex items-center justify-center my-3 sm:my-0">
+                    <div className="relative w-48 xs:w-56 sm:w-64 h-24 sm:h-32 border-2 border-slate-800 rounded-xl flex items-center justify-center bg-white shadow-sm">
                       {/* Center Bore Hole */}
-                      <div className="w-16 h-16 rounded-full border-2 border-dashed border-blue-600 bg-blue-50/60 flex items-center justify-center">
-                        <div className="w-4 h-4 rounded-full bg-blue-500/80 animate-ping"></div>
-                        <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                      <div className="w-12 sm:w-16 h-12 sm:h-16 rounded-full border-2 border-dashed border-blue-600 bg-blue-50/60 flex items-center justify-center">
+                        <div className="w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-blue-500/80 animate-ping"></div>
+                        <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-blue-600"></div>
                       </div>
                       
                       {/* Dimension Indicators */}
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9.5px] text-slate-900 font-extrabold bg-white px-2 py-0.5 rounded border border-slate-400 shadow-xs">
+                      <span className="absolute -top-4 sm:-top-5 left-1/2 -translate-x-1/2 text-[8px] sm:text-[9.5px] text-slate-900 font-extrabold bg-white px-1.5 sm:px-2 py-0.5 rounded border border-slate-400 shadow-xs whitespace-nowrap">
                         Ø 140.00 mm ± 0.05
                       </span>
-                      <span className="absolute -left-7 top-1/2 -translate-y-1/2 text-[9.5px] text-slate-900 font-extrabold bg-white px-1 py-0.5 rounded border border-slate-400 shadow-xs -rotate-90">
+                      <span className="absolute -left-6 sm:-left-7 top-1/2 -translate-y-1/2 text-[8px] sm:text-[9.5px] text-slate-900 font-extrabold bg-white px-1 py-0.5 rounded border border-slate-400 shadow-xs -rotate-90 whitespace-nowrap">
                         80.00 mm
                       </span>
                     </div>
                   </div>
 
-                  {/* Highlighting Flags in Audit Mode */}
-                  {heroViewMode === 'audit' && (
-                    <>
-                      {/* Floating Issue Badge Top Left */}
-                      <div className="absolute top-4 left-4 z-20 px-3 py-1.5 bg-rose-500 text-white rounded-xl text-[10px] font-bold shadow-md border border-rose-400 flex items-center gap-1.5 animate-pulse">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        <span>2 CRITICAL FIELDS MISSING</span>
-                      </div>
-
-                      {/* Floating Accuracy Badge Top Right */}
-                      <div className="absolute top-4 right-4 z-20 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-[10px] font-bold shadow-md border border-emerald-500 flex items-center gap-1.5">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        <span>ISO 7200 BORDER VERIFIED</span>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Title Block Box Mockup at Bottom (Light Mode Table) */}
-                  <div className="relative z-10 w-full bg-white/95 border-2 border-slate-400 rounded-xl p-2 text-[10px] shadow-sm text-slate-800 font-mono">
-                    <div className="grid grid-cols-12 gap-1">
+                  {/* Title Block Box Mockup at Bottom (Responsive Light Mode Table) */}
+                  <div className="relative z-10 w-full bg-white/95 border-2 border-slate-400 rounded-xl p-1.5 sm:p-2 text-[9px] sm:text-[10px] shadow-sm text-slate-800 font-mono mt-2 sm:mt-0">
+                    <div className="grid grid-cols-12 gap-1 text-center">
                       
                       {/* DWG NO */}
-                      <div className={`col-span-4 p-1.5 rounded border ${heroViewMode === 'audit' ? 'bg-rose-50 border-2 border-rose-500 text-rose-700 animate-pulse font-extrabold' : 'bg-slate-50 border-slate-300'}`}>
-                        <div className="text-[7px] text-slate-500 font-bold">DWG NO.</div>
-                        <div>{heroViewMode === 'audit' ? '⚠️ MISSING' : '----------------'}</div>
+                      <div className={`col-span-4 p-1 sm:p-1.5 rounded border ${heroViewMode === 'audit' ? 'bg-rose-50 border border-rose-500 text-rose-700 animate-pulse font-extrabold' : 'bg-slate-50 border-slate-300'}`}>
+                        <div className="text-[6.5px] sm:text-[7.5px] text-slate-500 font-bold truncate">DWG NO.</div>
+                        <div className="text-[8px] sm:text-[10px] truncate">{heroViewMode === 'audit' ? '⚠️ MISSING' : '-----------'}</div>
                       </div>
 
                       {/* REVISION */}
-                      <div className="col-span-2 p-1.5 rounded border border-slate-300 bg-slate-50">
-                        <div className="text-[7px] text-slate-500 font-bold">REV</div>
-                        <div className="font-extrabold text-blue-700">Rev C</div>
+                      <div className="col-span-2 p-1 sm:p-1.5 rounded border border-slate-300 bg-slate-50">
+                        <div className="text-[6.5px] sm:text-[7.5px] text-slate-500 font-bold truncate">REV</div>
+                        <div className="text-[8px] sm:text-[10px] font-extrabold text-blue-700 truncate">Rev C</div>
                       </div>
 
                       {/* DRAWN SIG */}
-                      <div className={`col-span-3 p-1.5 rounded border ${heroViewMode === 'audit' ? 'bg-rose-50 border-2 border-rose-500 text-rose-700 animate-pulse font-extrabold' : 'bg-slate-50 border-slate-300'}`}>
-                        <div className="text-[7px] text-slate-500 font-bold">DRAWN SIG</div>
-                        <div>{heroViewMode === 'audit' ? '⚠️ REQUIRED' : '----------------'}</div>
+                      <div className={`col-span-3 p-1 sm:p-1.5 rounded border ${heroViewMode === 'audit' ? 'bg-rose-50 border border-rose-500 text-rose-700 animate-pulse font-extrabold' : 'bg-slate-50 border-slate-300'}`}>
+                        <div className="text-[6.5px] sm:text-[7.5px] text-slate-500 font-bold truncate">DRAWN SIG</div>
+                        <div className="text-[8px] sm:text-[10px] truncate">{heroViewMode === 'audit' ? '⚠️ REQUIRED' : '-----------'}</div>
                       </div>
 
                       {/* CHK'D */}
-                      <div className="col-span-3 p-1.5 rounded border border-emerald-300 bg-emerald-50 font-extrabold text-emerald-800">
-                        <div className="text-[7px] text-emerald-600 font-bold">CHK'D</div>
-                        <div>✔ J. Miller</div>
+                      <div className="col-span-3 p-1 sm:p-1.5 rounded border border-emerald-300 bg-emerald-50 font-extrabold text-emerald-800">
+                        <div className="text-[6.5px] sm:text-[7.5px] text-emerald-600 font-bold truncate">CHK'D</div>
+                        <div className="text-[8px] sm:text-[10px] truncate">✔ Signed</div>
                       </div>
                     </div>
                   </div>
@@ -424,10 +505,10 @@ export default function LandingPage({
                 </div>
 
                 {/* Card Footer Live Stats */}
-                <div className="mt-4 flex items-center justify-between text-xs font-semibold text-slate-600 px-1">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-blue-600" />
-                    <span>Inspection Engine Speed: <strong>1.4 seconds</strong></span>
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-0 text-[10.5px] sm:text-xs font-semibold text-slate-600 px-1">
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                    <span>Inspection Engine Speed: <strong>1.4s</strong></span>
                   </div>
                   <div className="text-slate-500">Confidence Score: <strong className="text-emerald-600">98.6%</strong></div>
                 </div>
